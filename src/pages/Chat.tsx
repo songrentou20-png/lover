@@ -199,7 +199,7 @@ export default function Chat() {
             className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
           >
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs">
-              ✦
+              霁
             </div>
             <div className="text-left">
               <div className="flex items-center gap-1">
@@ -221,7 +221,7 @@ export default function Chat() {
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
           {activeSession.messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-white/25 select-none gap-2">
-              <div className="text-3xl">✦</div>
+              <div className="text-3xl">霁</div>
               <div className="text-sm">在。今天想聊点什么？</div>
             </div>
           )}
@@ -230,7 +230,7 @@ export default function Chat() {
             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'assistant' && (
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 mr-2 mt-0.5 flex items-center justify-center text-white text-[10px] font-bold">
-                  ✦
+                  霁
                 </div>
               )}
               <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
@@ -248,7 +248,7 @@ export default function Chat() {
 
           {loading && (
             <div className="flex justify-start">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 mr-2 mt-0.5 flex items-center justify-center text-white text-[10px]">✦</div>
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 mr-2 mt-0.5 flex items-center justify-center text-white text-[10px]">霁</div>
               <div className="glass rounded-2xl rounded-tl-sm px-4 py-3">
                 <div className="flex gap-1 items-center">
                   <span className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
