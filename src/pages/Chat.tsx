@@ -286,11 +286,15 @@ export default function Chat({
         }`}
       >
         <div className="flex items-center gap-3 px-4 pt-5 pb-4">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-            {prefs.userText}
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+            {prefs.aiText}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-white truncate">{prefs.userName}</div>
+            <div className="text-sm font-semibold text-white truncate">{prefs.aiName}</div>
+            <div className="flex items-center gap-1 text-[10px] text-green-400">
+              <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
+              Online
+            </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="text-white/40 hover:text-white/70">
             <X size={18} />
