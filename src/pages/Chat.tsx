@@ -24,17 +24,11 @@ function createSession(title = '新对话'): Session {
   return { id: Date.now().toString(), title, messages: [], pinned: false, updatedAt: new Date() }
 }
 
-const MOCK_SESSIONS: Session[] = [
-  { id: '1', title: '我的小助手', messages: [], pinned: true, updatedAt: new Date() },
-  { id: '2', title: '学习计划', messages: [], pinned: true, updatedAt: new Date() },
-  { id: '3', title: '日记灵感', messages: [], pinned: false, updatedAt: new Date() },
-  { id: '4', title: '旅行计划', messages: [], pinned: false, updatedAt: new Date() },
-  { id: '5', title: '论文相关', messages: [], pinned: false, updatedAt: new Date() },
-]
+const INIT_SESSION = createSession()
 
 export default function Chat() {
-  const [sessions, setSessions] = useState<Session[]>(MOCK_SESSIONS)
-  const [activeId, setActiveId] = useState(MOCK_SESSIONS[0].id)
+  const [sessions, setSessions] = useState<Session[]>([INIT_SESSION])
+  const [activeId, setActiveId] = useState(INIT_SESSION.id)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
