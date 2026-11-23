@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import {
   Send, Plus, ChevronDown, Paperclip, Image, Mic,
   Star, MoreHorizontal, X, Search, MessageCircle,
-  Pencil, Trash2,
+  Pencil, Trash2, Phone, PhoneOff, MicOff,
 } from 'lucide-react'
 import type { Preferences } from '../hooks/usePreferences'
 
@@ -26,6 +26,55 @@ function createSession(title = '新对话'): Session {
 }
 
 const INIT_SESSION = createSession()
+
+// ——— 通话弹窗 ———
+function CallOverlay({ aiText, aiName, onClose }: { aiText: string; aiName: string; onClose: () => void }) {
+  const [muted, setMuted] = useState(false)
+  const [seconds, setSeconds] = useState(0)
+
+  useEffect(() => {
+    const t = setInterval(() => setSeconds(s => s + 1), 1000)
+    return () => clearInterval(t)
+  }, [])
+
+  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
+
+  return (
+    <div className="absolute inset-0 z-50 flex flex-col items-center justify-between py-16"
+      style={{ background: 'rgba(10,8,30,0.92)', backdropFilter: 'blur(30px)' }}>
+      {/* AI 信息 */}
+      <div className="flex flex-col items-center gap-4 mt-8">
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-4xl font-bold shadow-2xl shadow-purple-500/30">
+          {aiText}
+        </div>
+        <div className="text-xl font-semibold text-white">{aiName}</div>
+        <div className="text-sm text-green-400 flex items-center gap-1.5">
+          <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+          通话中 {fmt(seconds)}
+        </div>
+        <div className="text-xs text-white/30 mt-1">语音通话功能接入中</div>
+      </div>
+
+      {/* 操作按钮 */}
+      <div className="flex items-center gap-8">
+        <button
+          onClick={() => setMuted(v => !v)}
+          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
+            muted ? 'bg-white/20 text-white/50' : 'bg-white/10 text-white/70 hover:bg-white/20'
+          }`}
+        >
+          {muted ? <MicOff size={22} /> : <Mic size={22} />}
+        </button>
+        <button
+          onClick={onClose}
+          className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-400 flex items-center justify-center text-white shadow-lg shadow-red-500/40 transition-colors"
+        >
+          <PhoneOff size={24} />
+        </button>
+      </div>
+    </div>
+  )
+}
 
 // ——— 会话条目 ———
 function SessionRow({
@@ -117,13 +166,24 @@ function SessionRow({
 }
 
 // ——— 主组件 ———
-export default function Chat({ prefs }: { prefs: Preferences }) {
+export default function Chat({
+  prefs,
+  updatePrefs,
+}: {
+  prefs: Preferences
+  updatePrefs: (patch: Partial<Preferences>) => void
+}) {
   const [sessions, setSessions] = useState<Session[]>([INIT_SESSION])
   const [activeId, setActiveId] = useState(INIT_SESSION.id)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [calling, setCalling] = useState(false)
+  // AI 名字内联编辑
+  const [editingAiName, setEditingAiName] = useState(false)
+  const [aiNameInput, setAiNameInput] = useState(prefs.aiName)
+
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -134,6 +194,11 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [activeSession?.messages])
+
+  // 同步外部 prefs.aiName 变化（Settings 修改时）
+  useEffect(() => {
+    if (!editingAiName) setAiNameInput(prefs.aiName)
+  }, [prefs.aiName, editingAiName])
 
   const autoResize = () => {
     const el = textareaRef.current
@@ -175,30 +240,24 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
     setSidebarOpen(false)
   }
 
-  const switchSession = (id: string) => {
-    setActiveId(id)
-    setSidebarOpen(false)
-  }
-
-  const renameSession = (id: string, name: string) => {
-    setSessions(prev => prev.map(s => s.id === id ? { ...s, title: name } : s))
-  }
-
-  const togglePin = (id: string) => {
-    setSessions(prev => prev.map(s => s.id === id ? { ...s, pinned: !s.pinned } : s))
-  }
-
+  const switchSession = (id: string) => { setActiveId(id); setSidebarOpen(false) }
+  const renameSession = (id: string, name: string) => setSessions(prev => prev.map(s => s.id === id ? { ...s, title: name } : s))
+  const togglePin = (id: string) => setSessions(prev => prev.map(s => s.id === id ? { ...s, pinned: !s.pinned } : s))
   const deleteSession = (id: string) => {
     setSessions(prev => {
       const next = prev.filter(s => s.id !== id)
       if (next.length === 0) {
-        const fresh = createSession()
-        setActiveId(fresh.id)
-        return [fresh]
+        const fresh = createSession(); setActiveId(fresh.id); return [fresh]
       }
       if (id === activeId) setActiveId(next[next.length - 1].id)
       return next
     })
+  }
+
+  const submitAiName = () => {
+    if (aiNameInput.trim()) updatePrefs({ aiName: aiNameInput.trim() })
+    else setAiNameInput(prefs.aiName)
+    setEditingAiName(false)
   }
 
   const formatTime = (d: Date) => d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
@@ -206,12 +265,18 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
   return (
     <div className="relative flex h-full overflow-hidden">
 
+      {/* 通话弹窗 */}
+      {calling && (
+        <CallOverlay
+          aiText={prefs.aiText}
+          aiName={prefs.aiName}
+          onClose={() => setCalling(false)}
+        />
+      )}
+
       {/* 侧边栏遮罩 */}
       {sidebarOpen && (
-        <div
-          className="absolute inset-0 z-20 bg-black/30 backdrop-blur-sm"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="absolute inset-0 z-20 bg-black/30 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* 左侧会话列表抽屉 */}
@@ -220,7 +285,6 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* 用户信息 */}
         <div className="flex items-center gap-3 px-4 pt-5 pb-4">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
             {prefs.userText}
@@ -233,7 +297,6 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
           </button>
         </div>
 
-        {/* 搜索 */}
         <div className="px-3 pb-3">
           <div className="flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2">
             <Search size={14} className="text-white/40" />
@@ -246,25 +309,19 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
           </div>
         </div>
 
-        {/* 新建 */}
         <button
           onClick={newSession}
           className="mx-3 mb-3 flex items-center gap-2 bg-white/10 hover:bg-white/15 rounded-xl px-3 py-2 text-white/70 hover:text-white text-sm transition-colors"
         >
-          <Plus size={14} />
-          新建窗口
+          <Plus size={14} /> 新建窗口
         </button>
 
         <div className="flex-1 overflow-y-auto px-3 space-y-4">
-          {/* 置顶 */}
           {pinned.length > 0 && (
             <div>
               <div className="text-[11px] text-white/40 font-medium px-1 mb-2">置顶</div>
               {pinned.map(s => (
-                <SessionRow
-                  key={s.id}
-                  s={s}
-                  active={s.id === activeId}
+                <SessionRow key={s.id} s={s} active={s.id === activeId}
                   onSwitch={() => switchSession(s.id)}
                   onRename={name => renameSession(s.id, name)}
                   onTogglePin={() => togglePin(s.id)}
@@ -273,15 +330,10 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
               ))}
             </div>
           )}
-
-          {/* 最近 */}
           <div>
             <div className="text-[11px] text-white/40 font-medium px-1 mb-2">最近聊天</div>
             {recent.map(s => (
-              <SessionRow
-                key={s.id}
-                s={s}
-                active={s.id === activeId}
+              <SessionRow key={s.id} s={s} active={s.id === activeId}
                 onSwitch={() => switchSession(s.id)}
                 onRename={name => renameSession(s.id, name)}
                 onTogglePin={() => togglePin(s.id)}
@@ -304,9 +356,28 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs">
               {prefs.aiText}
             </div>
-            <div className="text-left">
+            <div className="text-left" onClick={e => e.stopPropagation()}>
               <div className="flex items-center gap-1">
-                <span className="text-sm font-semibold text-white">{prefs.aiName}</span>
+                {editingAiName ? (
+                  <input
+                    autoFocus
+                    value={aiNameInput}
+                    onChange={e => setAiNameInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' || e.key === 'Escape') submitAiName()
+                    }}
+                    onBlur={submitAiName}
+                    className="bg-transparent text-sm font-semibold text-white outline-none border-b border-white/40 w-20"
+                  />
+                ) : (
+                  <span
+                    className="text-sm font-semibold text-white cursor-text hover:opacity-80"
+                    onClick={() => { setEditingAiName(true); setAiNameInput(prefs.aiName) }}
+                    title="点击改名"
+                  >
+                    {prefs.aiName}
+                  </span>
+                )}
                 <ChevronDown size={12} className="text-white/50" />
               </div>
               <div className="flex items-center gap-1 text-[10px] text-green-400">
@@ -315,9 +386,19 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
               </div>
             </div>
           </button>
-          <button className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-all">
-            <MoreHorizontal size={18} />
-          </button>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCalling(true)}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-green-400 transition-all"
+              title="语音通话"
+            >
+              <Phone size={18} />
+            </button>
+            <button className="p-1.5 rounded-lg hover:bg-white/10 text-white/50 hover:text-white transition-all">
+              <MoreHorizontal size={18} />
+            </button>
+          </div>
         </div>
 
         {/* 消息列表 */}
@@ -371,7 +452,6 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
               ref={textareaRef}
               value={input}
               onChange={e => { setInput(e.target.value); autoResize() }}
-              onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
               placeholder="发送消息..."
               rows={1}
               className="w-full bg-transparent text-white text-sm resize-none outline-none leading-relaxed"
@@ -379,13 +459,13 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
             />
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-1">
-                <button className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors">
+                <button className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors" title="上传文件">
                   <Paperclip size={16} />
                 </button>
-                <button className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors">
+                <button className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors" title="上传图片">
                   <Image size={16} />
                 </button>
-                <button className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors">
+                <button className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors" title="语音输入">
                   <Mic size={16} />
                 </button>
               </div>

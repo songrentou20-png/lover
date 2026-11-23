@@ -42,7 +42,7 @@ export default function App() {
 
       {/* 页面内容 */}
       <div className="relative flex-1 overflow-hidden">
-        {activeTab === 'chat' && <Chat prefs={prefs} />}
+        {activeTab === 'chat' && <Chat prefs={prefs} updatePrefs={update} />}
         {activeTab === 'memory' && <Memory />}
         {activeTab === 'mcp' && <MCP />}
         {activeTab === 'apps' && <Apps />}
