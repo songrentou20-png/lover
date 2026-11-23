@@ -11,6 +11,27 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  thinking?: string
+}
+
+function ThinkingPanel({ content }: { content: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="mb-1.5">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1.5 text-[11px] text-white/35 hover:text-white/60 transition-colors"
+      >
+        <span className={`transition-transform duration-200 ${open ? 'rotate-90' : ''}`}>▶</span>
+        {open ? '收起思考' : '查看思考'}
+      </button>
+      {open && (
+        <div className="mt-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/[0.07] text-[11px] text-white/50 leading-relaxed whitespace-pre-wrap">
+          {content}
+        </div>
+      )}
+    </div>
+  )
 }
 
 interface Session {
@@ -233,6 +254,7 @@ export default function Chat({
     ))
     setLoading(true)
     let segments: string[] = ['网络错误，请稍后再试']
+    let thinking: string | undefined
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -240,6 +262,7 @@ export default function Chat({
         body: JSON.stringify({ messages: [...activeSession.messages, userMsg] }),
       })
       const data = await res.json()
+      thinking = data.thinking || undefined
       if (Array.isArray(data.messages) && data.messages.length > 0) {
         segments = data.messages
       } else {
@@ -254,6 +277,7 @@ export default function Chat({
       role: 'assistant',
       content,
       timestamp: new Date(),
+      thinking: i === 0 ? thinking : undefined,
     }))
     setSessions(prev => prev.map(s =>
       s.id === activeId ? { ...s, messages: [...s.messages, ...aiMsgs], updatedAt: new Date() } : s
@@ -439,20 +463,28 @@ export default function Chat({
           )}
 
           {activeSession.messages.map(msg => (
-            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              {msg.role === 'assistant' && (
-                <div className="mr-2 mt-0.5">
-                  <Avatar imageUrl={prefs.aiAvatar} text={prefs.aiText} size="w-7 h-7" textSize="text-[10px]" gradient="from-purple-500 to-blue-500" />
-                </div>
+            <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+              {/* 思考折叠（仅 assistant） */}
+              {msg.role === 'assistant' && msg.thinking && (
+                <ThinkingPanel content={msg.thinking} />
               )}
-              <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                msg.role === 'user'
-                  ? 'glass text-white rounded-tr-sm'
-                  : 'glass text-white/90 rounded-tl-sm'
-              }`}>
-                <div className="whitespace-pre-wrap">{msg.content}</div>
-                <div className={`text-[10px] mt-1 ${msg.role === 'user' ? 'text-white/50 text-right' : 'text-white/30'}`}>
-                  {formatTime(msg.timestamp)}
+              <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} w-full`}>
+                {msg.role === 'assistant' && (
+                  <div className="mr-2 mt-0.5 flex-shrink-0">
+                    <Avatar imageUrl={prefs.aiAvatar} text={prefs.aiText} size="w-7 h-7" textSize="text-[10px]" gradient="from-purple-500 to-blue-500" />
+                  </div>
+                )}
+                <div className="flex flex-col max-w-[75%]">
+                  <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                    msg.role === 'user'
+                      ? 'glass text-white rounded-tr-sm'
+                      : 'glass text-white/90 rounded-tl-sm'
+                  }`}>
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  </div>
+                  <div className={`text-[10px] mt-1 px-1 text-white/30 ${msg.role === 'user' ? 'text-right' : ''}`}>
+                    {formatTime(msg.timestamp)}
+                  </div>
                 </div>
               </div>
             </div>
