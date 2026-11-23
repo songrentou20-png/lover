@@ -232,11 +232,24 @@ export default function Chat({
         : s
     ))
     setLoading(true)
-    await new Promise(r => setTimeout(r, 900))
+    let replyContent = '...'
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...activeSession.messages, userMsg],
+        }),
+      })
+      const data = await res.json()
+      replyContent = data.content || data.error || '没有收到回复'
+    } catch {
+      replyContent = '网络错误，请稍后再试'
+    }
     const aiMsg: Message = {
       id: (Date.now() + 1).toString(),
       role: 'assistant',
-      content: '后端接入中，VPS 搭好就能找到我了。',
+      content: replyContent,
       timestamp: new Date(),
     }
     setSessions(prev => prev.map(s =>
