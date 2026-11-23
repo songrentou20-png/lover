@@ -4,14 +4,18 @@ export interface Preferences {
   userText: string
   userName: string
   aiText: string
+  aiName: string
   bgPreset: string
+  glassOpacity: number  // 0-100，映射到 0.02-0.20
 }
 
 export const DEFAULT_PREFS: Preferences = {
   userText: '思',
   userName: '思涵',
   aiText: '霁',
+  aiName: 'Claude',
   bgPreset: 'default',
+  glassOpacity: 28,
 }
 
 export const BG_PRESETS: Record<string, { label: string; bg: string; glow: string }> = {

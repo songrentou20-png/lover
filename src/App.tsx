@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MessageCircle, Brain, Puzzle, LayoutGrid, Settings } from 'lucide-react'
 import Chat from './pages/Chat'
 import Memory from './pages/Memory'
@@ -21,6 +21,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const { prefs, update } = usePreferences()
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
+
+  useEffect(() => {
+    const alpha = (0.02 + (prefs.glassOpacity / 100) * 0.18).toFixed(3)
+    const border = (parseFloat(alpha) * 1.6).toFixed(3)
+    document.documentElement.style.setProperty('--glass-alpha', alpha)
+    document.documentElement.style.setProperty('--glass-border', border)
+  }, [prefs.glassOpacity])
 
   return (
     <div

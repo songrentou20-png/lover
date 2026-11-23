@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   Send, Plus, ChevronDown, Paperclip, Image, Mic,
-  Star, MoreHorizontal, X, Search,
-  MessageCircle,
+  Star, MoreHorizontal, X, Search, MessageCircle,
+  Pencil, Trash2,
 } from 'lucide-react'
 import type { Preferences } from '../hooks/usePreferences'
 
@@ -27,21 +27,109 @@ function createSession(title = '新对话'): Session {
 
 const INIT_SESSION = createSession()
 
+// ——— 会话条目 ———
+function SessionRow({
+  s, active, onSwitch, onRename, onTogglePin, onDelete,
+}: {
+  s: Session
+  active: boolean
+  onSwitch: () => void
+  onRename: (name: string) => void
+  onTogglePin: () => void
+  onDelete: () => void
+}) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [nameVal, setNameVal] = useState(s.title)
+
+  const submitRename = () => {
+    if (nameVal.trim()) onRename(nameVal.trim())
+    setEditing(false)
+  }
+
+  return (
+    <div className="relative">
+      {editing ? (
+        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/15">
+          <input
+            autoFocus
+            value={nameVal}
+            onChange={e => setNameVal(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') submitRename()
+              if (e.key === 'Escape') setEditing(false)
+            }}
+            onBlur={submitRename}
+            className="flex-1 bg-transparent text-sm text-white outline-none min-w-0"
+          />
+        </div>
+      ) : (
+        <div
+          className={`group flex items-center gap-2 px-3 py-2.5 rounded-xl transition-colors cursor-pointer ${
+            active ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white/80'
+          }`}
+        >
+          <button className="flex-1 flex items-center gap-2 text-left min-w-0" onClick={onSwitch}>
+            {s.pinned
+              ? <Star size={14} className="text-yellow-400 flex-shrink-0" />
+              : <MessageCircle size={14} className="flex-shrink-0 opacity-50" />
+            }
+            <span className="text-sm truncate">{s.title}</span>
+          </button>
+          <button
+            onClick={e => { e.stopPropagation(); setMenuOpen(v => !v) }}
+            className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-white/20 text-white/50 hover:text-white flex-shrink-0 transition-opacity"
+          >
+            <MoreHorizontal size={14} />
+          </button>
+        </div>
+      )}
+
+      {menuOpen && (
+        <div
+          className="absolute right-0 top-full z-50 mt-0.5 glass rounded-xl py-1 shadow-xl"
+          style={{ minWidth: 120 }}
+          onMouseLeave={() => setMenuOpen(false)}
+        >
+          <button
+            onClick={() => { setNameVal(s.title); setEditing(true); setMenuOpen(false) }}
+            className="w-full px-3 py-2 text-xs text-white/70 hover:text-white hover:bg-white/10 text-left flex items-center gap-2"
+          >
+            <Pencil size={12} /> 重命名
+          </button>
+          <button
+            onClick={() => { onTogglePin(); setMenuOpen(false) }}
+            className="w-full px-3 py-2 text-xs text-white/70 hover:text-white hover:bg-white/10 text-left flex items-center gap-2"
+          >
+            <Star size={12} /> {s.pinned ? '取消置顶' : '置顶'}
+          </button>
+          <div className="my-1 border-t border-white/10" />
+          <button
+            onClick={() => { onDelete(); setMenuOpen(false) }}
+            className="w-full px-3 py-2 text-xs text-red-400/70 hover:text-red-400 hover:bg-white/10 text-left flex items-center gap-2"
+          >
+            <Trash2 size={12} /> 删除
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ——— 主组件 ———
 export default function Chat({ prefs }: { prefs: Preferences }) {
   const [sessions, setSessions] = useState<Session[]>([INIT_SESSION])
   const [activeId, setActiveId] = useState(INIT_SESSION.id)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [search, setSearch] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [search, setSearch] = useState('')
 
   const activeSession = sessions.find(s => s.id === activeId)!
   const pinned = sessions.filter(s => s.pinned)
-  const recent = sessions.filter(s => !s.pinned).filter(s =>
-    !search || s.title.includes(search)
-  )
+  const recent = sessions.filter(s => !s.pinned && (!search || s.title.includes(search)))
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -68,7 +156,12 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
     ))
     setLoading(true)
     await new Promise(r => setTimeout(r, 900))
-    const aiMsg: Message = { id: (Date.now() + 1).toString(), role: 'assistant', content: '后端接入中，VPS 搭好就能找到我了。', timestamp: new Date() }
+    const aiMsg: Message = {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: '后端接入中，VPS 搭好就能找到我了。',
+      timestamp: new Date(),
+    }
     setSessions(prev => prev.map(s =>
       s.id === activeId ? { ...s, messages: [...s.messages, aiMsg], updatedAt: new Date() } : s
     ))
@@ -85,6 +178,27 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
   const switchSession = (id: string) => {
     setActiveId(id)
     setSidebarOpen(false)
+  }
+
+  const renameSession = (id: string, name: string) => {
+    setSessions(prev => prev.map(s => s.id === id ? { ...s, title: name } : s))
+  }
+
+  const togglePin = (id: string) => {
+    setSessions(prev => prev.map(s => s.id === id ? { ...s, pinned: !s.pinned } : s))
+  }
+
+  const deleteSession = (id: string) => {
+    setSessions(prev => {
+      const next = prev.filter(s => s.id !== id)
+      if (next.length === 0) {
+        const fresh = createSession()
+        setActiveId(fresh.id)
+        return [fresh]
+      }
+      if (id === activeId) setActiveId(next[next.length - 1].id)
+      return next
+    })
   }
 
   const formatTime = (d: Date) => d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
@@ -147,13 +261,15 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
             <div>
               <div className="text-[11px] text-white/40 font-medium px-1 mb-2">置顶</div>
               {pinned.map(s => (
-                <button key={s.id} onClick={() => switchSession(s.id)}
-                  className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-left transition-colors ${
-                    s.id === activeId ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white/80'
-                  }`}>
-                  <Star size={14} className="text-yellow-400 flex-shrink-0" />
-                  <span className="text-sm truncate">{s.title}</span>
-                </button>
+                <SessionRow
+                  key={s.id}
+                  s={s}
+                  active={s.id === activeId}
+                  onSwitch={() => switchSession(s.id)}
+                  onRename={name => renameSession(s.id, name)}
+                  onTogglePin={() => togglePin(s.id)}
+                  onDelete={() => deleteSession(s.id)}
+                />
               ))}
             </div>
           )}
@@ -162,17 +278,18 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
           <div>
             <div className="text-[11px] text-white/40 font-medium px-1 mb-2">最近聊天</div>
             {recent.map(s => (
-              <button key={s.id} onClick={() => switchSession(s.id)}
-                className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-left transition-colors ${
-                  s.id === activeId ? 'bg-white/15 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white/80'
-                }`}>
-                <MessageCircle size={14} className="flex-shrink-0 opacity-50" />
-                <span className="text-sm truncate">{s.title}</span>
-              </button>
+              <SessionRow
+                key={s.id}
+                s={s}
+                active={s.id === activeId}
+                onSwitch={() => switchSession(s.id)}
+                onRename={name => renameSession(s.id, name)}
+                onTogglePin={() => togglePin(s.id)}
+                onDelete={() => deleteSession(s.id)}
+              />
             ))}
           </div>
         </div>
-
       </aside>
 
       {/* 主聊天区域 */}
@@ -189,7 +306,7 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
             </div>
             <div className="text-left">
               <div className="flex items-center gap-1">
-                <span className="text-sm font-semibold text-white">Claude</span>
+                <span className="text-sm font-semibold text-white">{prefs.aiName}</span>
                 <ChevronDown size={12} className="text-white/50" />
               </div>
               <div className="flex items-center gap-1 text-[10px] text-green-400">
@@ -255,7 +372,7 @@ export default function Chat({ prefs }: { prefs: Preferences }) {
               value={input}
               onChange={e => { setInput(e.target.value); autoResize() }}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-              placeholder="发送消息给 Claude..."
+              placeholder="发送消息..."
               rows={1}
               className="w-full bg-transparent text-white text-sm resize-none outline-none leading-relaxed"
               style={{ maxHeight: '160px' }}

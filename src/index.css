@@ -20,11 +20,16 @@ body {
 }
 
 /* 毛玻璃基础 */
+:root {
+  --glass-alpha: 0.07;
+  --glass-border: 0.12;
+}
+
 .glass {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, var(--glass-alpha));
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, var(--glass-border));
 }
 
 .glass-dark {
