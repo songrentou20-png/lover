@@ -232,28 +232,31 @@ export default function Chat({
         : s
     ))
     setLoading(true)
-    let replyContent = '...'
+    let segments: string[] = ['网络错误，请稍后再试']
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...activeSession.messages, userMsg],
-        }),
+        body: JSON.stringify({ messages: [...activeSession.messages, userMsg] }),
       })
       const data = await res.json()
-      replyContent = data.content || data.error || '没有收到回复'
+      if (Array.isArray(data.messages) && data.messages.length > 0) {
+        segments = data.messages
+      } else {
+        segments = [data.content || data.error || '没有收到回复']
+      }
     } catch {
-      replyContent = '网络错误，请稍后再试'
+      segments = ['网络错误，请稍后再试']
     }
-    const aiMsg: Message = {
-      id: (Date.now() + 1).toString(),
+    const now = Date.now()
+    const aiMsgs: Message[] = segments.map((content, i) => ({
+      id: (now + i + 1).toString(),
       role: 'assistant',
-      content: replyContent,
+      content,
       timestamp: new Date(),
-    }
+    }))
     setSessions(prev => prev.map(s =>
-      s.id === activeId ? { ...s, messages: [...s.messages, aiMsg], updatedAt: new Date() } : s
+      s.id === activeId ? { ...s, messages: [...s.messages, ...aiMsgs], updatedAt: new Date() } : s
     ))
     setLoading(false)
   }
