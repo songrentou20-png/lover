@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import {
-  Send, Plus, ChevronDown, Paperclip, Image, Mic,
+  Send, Plus, ChevronDown, ChevronUp, Paperclip, Image, Mic,
   Star, MoreHorizontal, X, Search, MessageCircle,
   Pencil, Trash2, Phone, PhoneOff, MicOff,
+  Copy, RotateCcw,
 } from 'lucide-react'
 import type { Preferences } from '../hooks/usePreferences'
 
@@ -17,16 +18,16 @@ interface Message {
 function ThinkingPanel({ content }: { content: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="mb-1.5">
+    <div className="glass rounded-2xl rounded-bl-sm mb-2 overflow-hidden max-w-[75%]">
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 text-[11px] text-white/35 hover:text-white/60 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors"
       >
-        <span className={`transition-transform duration-200 ${open ? 'rotate-90' : ''}`}>▶</span>
-        {open ? '收起思考' : '查看思考'}
+        <span className="text-xs text-white/60 font-medium">思考过程</span>
+        {open ? <ChevronUp size={13} className="text-white/40" /> : <ChevronDown size={13} className="text-white/40" />}
       </button>
       {open && (
-        <div className="mt-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/[0.07] text-[11px] text-white/50 leading-relaxed whitespace-pre-wrap">
+        <div className="px-3 pb-3 text-[11px] text-white/45 leading-relaxed whitespace-pre-wrap border-t border-white/[0.06] pt-2">
           {content}
         </div>
       )}
@@ -233,9 +234,10 @@ export default function Chat({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [calling, setCalling] = useState(false)
-  // AI 名字内联编辑
   const [editingAiName, setEditingAiName] = useState(false)
   const [aiNameInput, setAiNameInput] = useState(prefs.aiName)
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState('')
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -263,18 +265,7 @@ export default function Chat({
     el.style.height = Math.min(el.scrollHeight, 160) + 'px'
   }
 
-  const send = async () => {
-    const text = input.trim()
-    if (!text || loading) return
-    setInput('')
-    if (textareaRef.current) textareaRef.current.style.height = 'auto'
-
-    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text, timestamp: new Date() }
-    setSessions(prev => prev.map(s =>
-      s.id === activeId
-        ? { ...s, messages: [...s.messages, userMsg], title: s.messages.length === 0 ? text.slice(0, 18) : s.title, updatedAt: new Date() }
-        : s
-    ))
+  const sendMessage = async (priorMsgs: Message[]) => {
     setLoading(true)
     let segments: string[] = ['网络错误，请稍后再试']
     let thinking: string | undefined
@@ -282,7 +273,7 @@ export default function Chat({
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...activeSession.messages, userMsg] }),
+        body: JSON.stringify({ messages: priorMsgs }),
       })
       const data = await res.json()
       thinking = data.thinking || undefined
@@ -306,6 +297,46 @@ export default function Chat({
       s.id === activeId ? { ...s, messages: [...s.messages, ...aiMsgs], updatedAt: new Date() } : s
     ))
     setLoading(false)
+  }
+
+  const send = async () => {
+    const text = input.trim()
+    if (!text || loading) return
+    setInput('')
+    if (textareaRef.current) textareaRef.current.style.height = 'auto'
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text, timestamp: new Date() }
+    setSessions(prev => prev.map(s =>
+      s.id === activeId
+        ? { ...s, messages: [...s.messages, userMsg], title: s.messages.length === 0 ? text.slice(0, 18) : s.title, updatedAt: new Date() }
+        : s
+    ))
+    await sendMessage([...activeSession.messages, userMsg])
+  }
+
+  const copyMsg = (content: string) => { navigator.clipboard.writeText(content).catch(() => {}) }
+
+  const retryMsg = async (msgId: string) => {
+    if (loading) return
+    const msgs = activeSession.messages
+    const idx = msgs.findIndex(m => m.id === msgId)
+    if (idx < 0) return
+    const trimmed = msgs.slice(0, idx)
+    setSessions(prev => prev.map(s => s.id === activeId ? { ...s, messages: trimmed } : s))
+    await sendMessage(trimmed)
+  }
+
+  const confirmEdit = async () => {
+    if (!editingMsgId || loading) return
+    const text = editContent.trim()
+    if (!text) { setEditingMsgId(null); return }
+    const msgs = activeSession.messages
+    const idx = msgs.findIndex(m => m.id === editingMsgId)
+    if (idx < 0) { setEditingMsgId(null); return }
+    const userMsg: Message = { id: Date.now().toString(), role: 'user', content: text, timestamp: new Date() }
+    const newMsgs = [...msgs.slice(0, idx), userMsg]
+    setSessions(prev => prev.map(s => s.id === activeId ? { ...s, messages: newMsgs } : s))
+    setEditingMsgId(null)
+    await sendMessage(newMsgs)
   }
 
   const newSession = () => {
@@ -487,7 +518,6 @@ export default function Chat({
 
           {activeSession.messages.map(msg => (
             <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              {/* 思考折叠（仅 assistant） */}
               {msg.role === 'assistant' && msg.thinking && (
                 <ThinkingPanel content={msg.thinking} />
               )}
@@ -498,15 +528,41 @@ export default function Chat({
                   </div>
                 )}
                 <div className="flex flex-col max-w-[75%]">
-                  <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                    msg.role === 'user'
-                      ? 'glass text-white rounded-tr-sm'
-                      : 'glass text-white/90 rounded-tl-sm'
-                  }`}>
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
-                  </div>
-                  <div className={`text-[10px] mt-1 px-1 text-white/30 ${msg.role === 'user' ? 'text-right' : ''}`}>
-                    {formatTime(msg.timestamp)}
+                  {editingMsgId === msg.id ? (
+                    <div className="glass rounded-2xl px-3 py-2 rounded-tr-sm">
+                      <textarea
+                        value={editContent}
+                        onChange={e => setEditContent(e.target.value)}
+                        className="w-full bg-transparent text-sm text-white outline-none resize-none min-h-[60px]"
+                        autoFocus
+                      />
+                      <div className="flex gap-2 justify-end mt-1.5">
+                        <button onClick={() => setEditingMsgId(null)} className="text-[11px] text-white/40 hover:text-white/70">取消</button>
+                        <button onClick={confirmEdit} className="text-[11px] text-white/80 hover:text-white">发送</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                      msg.role === 'user' ? 'glass text-white rounded-tr-sm' : 'glass text-white/90 rounded-tl-sm'
+                    }`}>
+                      <div className="whitespace-pre-wrap">{msg.content}</div>
+                    </div>
+                  )}
+                  <div className={`flex items-center gap-1 mt-1.5 px-1 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <span className="text-[10px] text-white/25 mr-1">{formatTime(msg.timestamp)}</span>
+                    <button onClick={() => copyMsg(msg.content)} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
+                      <Copy size={11} />
+                    </button>
+                    {msg.role === 'user' && (
+                      <button onClick={() => { setEditingMsgId(msg.id); setEditContent(msg.content) }} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
+                        <Pencil size={11} />
+                      </button>
+                    )}
+                    {msg.role === 'assistant' && (
+                      <button onClick={() => retryMsg(msg.id)} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
+                        <RotateCcw size={11} />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
