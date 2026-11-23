@@ -46,7 +46,25 @@ function createSession(title = '新对话'): Session {
   return { id: Date.now().toString(), title, messages: [], pinned: false, updatedAt: new Date() }
 }
 
-const INIT_SESSION = createSession()
+const SESSIONS_KEY = 'lover_sessions_v1'
+const ACTIVE_KEY = 'lover_active_v1'
+
+function loadSessions(): Session[] {
+  try {
+    const raw = localStorage.getItem(SESSIONS_KEY)
+    if (!raw) return [createSession()]
+    const parsed = JSON.parse(raw)
+    return parsed.map((s: Session) => ({
+      ...s,
+      updatedAt: new Date(s.updatedAt),
+      messages: s.messages.map((m: Message) => ({ ...m, timestamp: new Date(m.timestamp) })),
+    }))
+  } catch { return [createSession()] }
+}
+
+function saveSessions(ss: Session[]) {
+  try { localStorage.setItem(SESSIONS_KEY, JSON.stringify(ss)) } catch {}
+}
 
 // ——— 头像组件 ———
 function Avatar({ imageUrl, text, size, textSize, gradient }: {
@@ -206,8 +224,10 @@ export default function Chat({
   prefs: Preferences
   updatePrefs: (patch: Partial<Preferences>) => void
 }) {
-  const [sessions, setSessions] = useState<Session[]>([INIT_SESSION])
-  const [activeId, setActiveId] = useState(INIT_SESSION.id)
+  const [sessions, setSessions] = useState<Session[]>(loadSessions)
+  const [activeId, setActiveId] = useState<string>(() => {
+    try { return localStorage.getItem(ACTIVE_KEY) || loadSessions()[0].id } catch { return '' }
+  })
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -227,6 +247,9 @@ export default function Chat({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [activeSession?.messages])
+
+  useEffect(() => { saveSessions(sessions) }, [sessions])
+  useEffect(() => { try { localStorage.setItem(ACTIVE_KEY, activeId) } catch {} }, [activeId])
 
   // 同步外部 prefs.aiName 变化（Settings 修改时）
   useEffect(() => {
