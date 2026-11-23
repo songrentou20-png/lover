@@ -3,18 +3,24 @@ import { useState, useEffect } from 'react'
 export interface Preferences {
   userText: string
   userName: string
+  userAvatar: string   // base64 图片，空字符串用文字
   aiText: string
   aiName: string
+  aiAvatar: string     // base64 图片，空字符串用文字
   bgPreset: string
-  glassOpacity: number  // 0-100，映射到 0.02-0.20
+  wallpaper: string    // base64 图片，空字符串用 bgPreset
+  glassOpacity: number
 }
 
 export const DEFAULT_PREFS: Preferences = {
   userText: '思',
   userName: '思涵',
+  userAvatar: '',
   aiText: '霁',
   aiName: 'Claude',
+  aiAvatar: '',
   bgPreset: 'default',
+  wallpaper: '',
   glassOpacity: 28,
 }
 

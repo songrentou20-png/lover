@@ -21,6 +21,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const { prefs, update } = usePreferences()
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
+  const bgStyle = prefs.wallpaper
+    ? { backgroundImage: `url(${prefs.wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : { background: bg.bg }
 
   useEffect(() => {
     const alpha = (0.02 + (prefs.glassOpacity / 100) * 0.18).toFixed(3)
@@ -32,7 +35,7 @@ export default function App() {
   return (
     <div
       className="relative h-full w-full flex flex-col overflow-hidden"
-      style={{ background: bg.bg }}
+      style={bgStyle}
     >
       {/* 背景光晕 */}
       <div

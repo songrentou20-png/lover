@@ -27,6 +27,18 @@ function createSession(title = '新对话'): Session {
 
 const INIT_SESSION = createSession()
 
+// ——— 头像组件 ———
+function Avatar({ imageUrl, text, size, textSize, gradient }: {
+  imageUrl: string; text: string; size: string; textSize: string; gradient: string
+}) {
+  if (imageUrl) return <img src={imageUrl} className={`${size} rounded-full object-cover flex-shrink-0`} />
+  return (
+    <div className={`${size} rounded-full bg-gradient-to-br ${gradient} flex-shrink-0 flex items-center justify-center text-white font-bold ${textSize}`}>
+      {text || '？'}
+    </div>
+  )
+}
+
 // ——— 通话弹窗 ———
 function CallOverlay({ aiText, aiName, onClose }: { aiText: string; aiName: string; onClose: () => void }) {
   const [muted, setMuted] = useState(false)
@@ -286,9 +298,7 @@ export default function Chat({
         }`}
       >
         <div className="flex items-center gap-3 px-4 pt-5 pb-4">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-            {prefs.aiText}
-          </div>
+          <Avatar imageUrl={prefs.aiAvatar} text={prefs.aiText} size="w-9 h-9" textSize="text-sm" gradient="from-purple-500 to-blue-500" />
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-white truncate">{prefs.aiName}</div>
             <div className="flex items-center gap-1 text-[10px] text-green-400">
@@ -357,9 +367,7 @@ export default function Chat({
             onClick={() => setSidebarOpen(true)}
             className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
           >
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs">
-              {prefs.aiText}
-            </div>
+            <Avatar imageUrl={prefs.aiAvatar} text={prefs.aiText} size="w-7 h-7" textSize="text-xs" gradient="from-purple-500 to-blue-500" />
             <div className="text-left" onClick={e => e.stopPropagation()}>
               <div className="flex items-center gap-1">
                 {editingAiName ? (
@@ -417,8 +425,8 @@ export default function Chat({
           {activeSession.messages.map(msg => (
             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'assistant' && (
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 mr-2 mt-0.5 flex items-center justify-center text-white text-[10px] font-bold">
-                  {prefs.aiText}
+                <div className="mr-2 mt-0.5">
+                  <Avatar imageUrl={prefs.aiAvatar} text={prefs.aiText} size="w-7 h-7" textSize="text-[10px]" gradient="from-purple-500 to-blue-500" />
                 </div>
               )}
               <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
@@ -436,7 +444,7 @@ export default function Chat({
 
           {loading && (
             <div className="flex justify-start">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 mr-2 mt-0.5 flex items-center justify-center text-white text-[10px]">{prefs.aiText}</div>
+              <div className="mr-2 mt-0.5"><Avatar imageUrl={prefs.aiAvatar} text={prefs.aiText} size="w-7 h-7" textSize="text-[10px]" gradient="from-purple-500 to-blue-500" /></div>
               <div className="glass rounded-2xl rounded-tl-sm px-4 py-3">
                 <div className="flex gap-1 items-center">
                   <span className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
