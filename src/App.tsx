@@ -5,6 +5,7 @@ import Memory from './pages/Memory'
 import MCP from './pages/MCP'
 import Apps from './pages/Apps'
 import SettingsPage from './pages/Settings'
+import { usePreferences, BG_PRESETS } from './hooks/usePreferences'
 
 type Tab = 'memory' | 'mcp' | 'chat' | 'apps' | 'settings'
 
@@ -18,30 +19,27 @@ const tabs: { id: Tab; icon: typeof MessageCircle; label: string }[] = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
+  const { prefs, update } = usePreferences()
+  const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
 
   return (
     <div
       className="relative h-full w-full flex flex-col overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
-      }}
+      style={{ background: bg.bg }}
     >
       {/* 背景光晕 */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(ellipse at 20% 50%, rgba(120,80,255,0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(80,120,255,0.1) 0%, transparent 60%)',
-        }}
+        style={{ background: bg.glow }}
       />
 
       {/* 页面内容 */}
       <div className="relative flex-1 overflow-hidden">
-        {activeTab === 'chat' && <Chat />}
+        {activeTab === 'chat' && <Chat prefs={prefs} />}
         {activeTab === 'memory' && <Memory />}
         {activeTab === 'mcp' && <MCP />}
         {activeTab === 'apps' && <Apps />}
-        {activeTab === 'settings' && <SettingsPage />}
+        {activeTab === 'settings' && <SettingsPage prefs={prefs} updatePrefs={update} />}
       </div>
 
       {/* 底部导航 */}

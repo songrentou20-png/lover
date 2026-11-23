@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   Send, Plus, ChevronDown, Paperclip, Image, Mic,
-  Star, Settings, Palette, MoreHorizontal, X, Search,
+  Star, MoreHorizontal, X, Search,
   MessageCircle,
 } from 'lucide-react'
+import type { Preferences } from '../hooks/usePreferences'
 
 interface Message {
   id: string
@@ -26,7 +27,7 @@ function createSession(title = '新对话'): Session {
 
 const INIT_SESSION = createSession()
 
-export default function Chat() {
+export default function Chat({ prefs }: { prefs: Preferences }) {
   const [sessions, setSessions] = useState<Session[]>([INIT_SESSION])
   const [activeId, setActiveId] = useState(INIT_SESSION.id)
   const [input, setInput] = useState('')
@@ -108,10 +109,10 @@ export default function Chat() {
         {/* 用户信息 */}
         <div className="flex items-center gap-3 px-4 pt-5 pb-4">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-            思
+            {prefs.userText}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-white truncate">思涵</div>
+            <div className="text-sm font-semibold text-white truncate">{prefs.userName}</div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="text-white/40 hover:text-white/70">
             <X size={18} />
@@ -172,15 +173,6 @@ export default function Chat() {
           </div>
         </div>
 
-        {/* 底部操作 */}
-        <div className="border-t border-white/10 px-3 py-3 space-y-1">
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors text-sm">
-            <Settings size={15} />设置
-          </button>
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-white/50 hover:text-white/80 hover:bg-white/10 transition-colors text-sm">
-            <Palette size={15} />外观与主题
-          </button>
-        </div>
       </aside>
 
       {/* 主聊天区域 */}
@@ -193,7 +185,7 @@ export default function Chat() {
             className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
           >
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white text-xs">
-              霁
+              {prefs.aiText}
             </div>
             <div className="text-left">
               <div className="flex items-center gap-1">
@@ -215,7 +207,7 @@ export default function Chat() {
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
           {activeSession.messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-white/25 select-none gap-2">
-              <div className="text-3xl">霁</div>
+              <div className="text-3xl">{prefs.aiText}</div>
               <div className="text-sm">在。今天想聊点什么？</div>
             </div>
           )}
@@ -224,7 +216,7 @@ export default function Chat() {
             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'assistant' && (
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 mr-2 mt-0.5 flex items-center justify-center text-white text-[10px] font-bold">
-                  霁
+                  {prefs.aiText}
                 </div>
               )}
               <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
@@ -242,7 +234,7 @@ export default function Chat() {
 
           {loading && (
             <div className="flex justify-start">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 mr-2 mt-0.5 flex items-center justify-center text-white text-[10px]">霁</div>
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 mr-2 mt-0.5 flex items-center justify-center text-white text-[10px]">{prefs.aiText}</div>
               <div className="glass rounded-2xl rounded-tl-sm px-4 py-3">
                 <div className="flex gap-1 items-center">
                   <span className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
