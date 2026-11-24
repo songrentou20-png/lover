@@ -226,6 +226,7 @@ export default function Chat({
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
   const [kbHeight, setKbHeight] = useState(0)
+  const [vvHeight, setVvHeight] = useState(() => window.innerHeight)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -242,10 +243,12 @@ export default function Chat({
     const vv = window.visualViewport
     if (!vv) return
     const update = () => {
+      setVvHeight(vv.height)
       const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
       setKbHeight(kb)
       if (kb > 10) bottomRef.current?.scrollIntoView()
     }
+    update()
     vv.addEventListener('resize', update)
     vv.addEventListener('scroll', update)
     return () => {
@@ -478,8 +481,8 @@ export default function Chat({
         </div>
       </aside>
 
-      {/* 主聊天区域 */}
-      <div className="flex flex-col flex-1 h-full">
+      {/* 主聊天区域：高度跟视觉视口走，键盘弹起时自动缩短 */}
+      <div className="flex flex-col flex-1 overflow-hidden" style={{ height: `${vvHeight}px` }}>
 
         {/* 顶栏 */}
         <div className="flex items-center justify-between px-4 py-3">
@@ -515,7 +518,7 @@ export default function Chat({
         </div>
 
         {/* 消息列表 */}
-        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4" style={{ paddingBottom: `${Math.max(kbHeight, navHeight) + 72}px` }}>
+        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4" style={{ paddingBottom: '80px' }}>
           {activeSession?.messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-white/25 select-none gap-2">
               <div className="text-3xl">{prefs.aiText}</div>
