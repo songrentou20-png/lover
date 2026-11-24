@@ -384,7 +384,7 @@ export default function Chat({
   const formatTime = (d: Date) => d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <div className="relative flex h-full overflow-hidden">
+    <div className="absolute inset-0 flex overflow-hidden">
 
       {/* 通话弹窗 */}
       {calling && (
