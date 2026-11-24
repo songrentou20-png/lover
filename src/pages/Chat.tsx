@@ -519,7 +519,9 @@ export default function Chat({
           {activeSession.messages.map(msg => (
             <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               {msg.role === 'assistant' && msg.thinking && (
-                <ThinkingPanel content={msg.thinking} />
+                <div className="ml-9">
+                  <ThinkingPanel content={msg.thinking} />
+                </div>
               )}
               <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} w-full`}>
                 {msg.role === 'assistant' && (
