@@ -86,7 +86,6 @@ export default function App() {
         style={{
           top: 'env(safe-area-inset-top, 0px)',
           bottom: kbHeight > 50 ? 0 : navH,
-          transform: 'translateY(20px)',
         }}
       >
         {activeTab === 'chat' && <Chat prefs={prefs} kbHeight={kbHeight} />}
@@ -99,10 +98,9 @@ export default function App() {
       {/* 底部导航：负 bottom 让背景延伸到 home indicator 以下；padding 补偿保持按钮位置 */}
       <div ref={navRef} className={`fixed left-0 right-0 z-10 px-4 pt-2 ${kbHeight > 50 ? 'hidden' : ''}`}
         style={{
-          bottom: 'calc(0px - env(safe-area-inset-bottom, 0px))',
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + max(env(safe-area-inset-bottom, 0px), 16px))',
+          bottom: '-34px',
+          paddingBottom: 'calc(34px + max(env(safe-area-inset-bottom, 0px), 16px))',
           background: 'rgba(10, 8, 30, 0.75)',
-          transform: 'translateY(20px)',
         }}>
         <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
           {tabs.map(({ id, icon: Icon, label }) => {
