@@ -24,12 +24,16 @@ export default function App() {
   const [kbHeight, setKbHeight] = useState(0)
   const [navH, setNavH] = useState(88)
   const [sab, setSab] = useState(34)
+  const [sat, setSat] = useState(0)
   const fullHeightRef = useRef(0)
   const { prefs, update } = usePreferences()
 
   useEffect(() => {
-    const val = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sab')) || 0
-    setSab(val > 0 ? val : 34)
+    const style = getComputedStyle(document.documentElement)
+    const sabVal = parseInt(style.getPropertyValue('--sab')) || 0
+    setSab(sabVal > 0 ? sabVal : 34)
+    const satVal = parseInt(style.getPropertyValue('--sat')) || 0
+    setSat(satVal)
   }, [])
 
   useEffect(() => {
@@ -86,8 +90,8 @@ export default function App() {
       <div className="-z-10 pointer-events-none" style={{
         ...bgStyle,
         position: 'fixed',
-        top: 'calc(0px - env(safe-area-inset-top, 0px))',
-        bottom: 'calc(0px - env(safe-area-inset-bottom, 0px))',
+        top: `-${sat}px`,
+        bottom: `-${sab}px`,
         left: 0,
         right: 0,
       }} />
