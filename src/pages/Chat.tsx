@@ -551,16 +551,16 @@ export default function Chat({
                   {isLastInGroup && (
                     <div className={`flex items-center gap-1 mt-1.5 px-1 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <span className="text-[10px] text-white mr-1">{formatTime(msg.timestamp)}</span>
-                      <button onClick={() => copyMsg(msg.content)} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
+                      <button onClick={() => copyMsg(msg.content)} className="p-1 rounded-md hover:bg-white/10 text-white/60 hover:text-white transition-colors">
                         <Copy size={11} />
                       </button>
                       {msg.role === 'user' && (
-                        <button onClick={() => { setEditingMsgId(msg.id); setEditContent(msg.content) }} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
+                        <button onClick={() => { setEditingMsgId(msg.id); setEditContent(msg.content) }} className="p-1 rounded-md hover:bg-white/10 text-white/60 hover:text-white transition-colors">
                           <Pencil size={11} />
                         </button>
                       )}
                       {msg.role === 'assistant' && (
-                        <button onClick={() => retryMsg(msg.id)} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
+                        <button onClick={() => retryMsg(msg.id)} className="p-1 rounded-md hover:bg-white/10 text-white/60 hover:text-white transition-colors">
                           <RotateCcw size={11} />
                         </button>
                       )}
