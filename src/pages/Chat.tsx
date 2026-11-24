@@ -623,8 +623,8 @@ export default function Chat({
                 disabled={!input.trim() || loading}
                 className={`p-2 rounded-xl transition-all duration-200 ${
                   input.trim() && !loading
-                    ? 'bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-lg shadow-purple-500/25'
-                    : 'bg-white/10 text-white/30'
+                    ? 'text-white'
+                    : 'text-white/30'
                 }`}
               >
                 <Send size={15} />
