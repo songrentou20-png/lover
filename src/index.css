@@ -29,7 +29,8 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
+  /* 一次性读取 window.innerHeight 锁死，不随 visual viewport 变化 */
+  height: var(--screen-h, 100dvh);
   overflow: hidden;
   overscroll-behavior: none;
 }

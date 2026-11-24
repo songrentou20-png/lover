@@ -27,6 +27,19 @@ export default function App() {
   const { prefs, update } = usePreferences()
 
   useEffect(() => {
+    // 一次性锁定屏幕高度：消除键盘收起后 visual viewport 回弹延迟导致的底部黑条
+    document.documentElement.style.setProperty('--screen-h', window.innerHeight + 'px')
+
+    // 读取 safe-area-inset-top，Math.ceil 对齐整数 CSS px：消除 header 亚像素模糊
+    const probe = document.createElement('div')
+    probe.style.cssText = 'position:fixed;top:0;left:0;padding-top:env(safe-area-inset-top);pointer-events:none;visibility:hidden'
+    document.body.appendChild(probe)
+    const rawTop = parseFloat(getComputedStyle(probe).paddingTop) || 0
+    document.body.removeChild(probe)
+    document.documentElement.style.setProperty('--safe-top', Math.ceil(rawTop) + 'px')
+  }, [])
+
+  useEffect(() => {
     const vv = window.visualViewport
     fullHeightRef.current = vv ? vv.height : window.innerHeight
 
@@ -86,7 +99,7 @@ export default function App() {
         <div
           className="absolute left-0 right-0 overflow-hidden"
           style={{
-            top: 'env(safe-area-inset-top, 0px)',
+            top: 'var(--safe-top, env(safe-area-inset-top, 0px))',
             bottom: kbHeight > 50 ? 0 : navH,
           }}
         >
