@@ -238,6 +238,12 @@ export default function Chat({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [activeSession?.messages])
 
+  useEffect(() => {
+    if (kbHeight > 50) {
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 150)
+    }
+  }, [kbHeight])
+
   // 启动时从服务器加载会话
   useEffect(() => {
     fetch('/api/sessions')

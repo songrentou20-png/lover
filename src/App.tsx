@@ -93,8 +93,8 @@ export default function App() {
           {activeTab === 'settings' && <SettingsPage prefs={prefs} updatePrefs={update} />}
         </div>
 
-        {/* 底部导航：焊死在底部，被键盘遮住没关系 */}
-        <div ref={navRef} className="relative z-10 px-4 pb-4 pt-2">
+        {/* 底部导航：键盘弹起时隐藏，避免和输入框重叠 */}
+        <div ref={navRef} className={`relative z-10 px-4 pb-4 pt-2 ${kbHeight > 50 ? 'hidden' : ''}`}>
           <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
             {tabs.map(({ id, icon: Icon, label }) => {
               const active = id === activeTab
