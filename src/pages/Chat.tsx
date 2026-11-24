@@ -47,24 +47,14 @@ function createSession(title = '新对话'): Session {
   return { id: Date.now().toString(), title, messages: [], pinned: false, updatedAt: new Date() }
 }
 
-const SESSIONS_KEY = 'lover_sessions_v1'
 const ACTIVE_KEY = 'lover_active_v1'
 
-function loadSessions(): Session[] {
-  try {
-    const raw = localStorage.getItem(SESSIONS_KEY)
-    if (!raw) return [createSession()]
-    const parsed = JSON.parse(raw)
-    return parsed.map((s: Session) => ({
-      ...s,
-      updatedAt: new Date(s.updatedAt),
-      messages: s.messages.map((m: Message) => ({ ...m, timestamp: new Date(m.timestamp) })),
-    }))
-  } catch { return [createSession()] }
-}
-
-function saveSessions(ss: Session[]) {
-  try { localStorage.setItem(SESSIONS_KEY, JSON.stringify(ss)) } catch {}
+function parseSessions(data: Session[]): Session[] {
+  return data.map(s => ({
+    ...s,
+    updatedAt: new Date(s.updatedAt),
+    messages: s.messages.map((m: Message) => ({ ...m, timestamp: new Date(m.timestamp) })),
+  }))
 }
 
 // ——— 头像组件 ———
@@ -225,10 +215,9 @@ export default function Chat({
   prefs: Preferences
   updatePrefs: (patch: Partial<Preferences>) => void
 }) {
-  const [sessions, setSessions] = useState<Session[]>(loadSessions)
-  const [activeId, setActiveId] = useState<string>(() => {
-    try { return localStorage.getItem(ACTIVE_KEY) || loadSessions()[0].id } catch { return '' }
-  })
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [activeId, setActiveId] = useState<string>('')
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -242,7 +231,7 @@ export default function Chat({
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const activeSession = sessions.find(s => s.id === activeId)!
+  const activeSession = sessions.find(s => s.id === activeId) ?? sessions[0]
   const pinned = sessions.filter(s => s.pinned)
   const recent = sessions.filter(s => !s.pinned && (!search || s.title.includes(search)))
 
@@ -250,8 +239,40 @@ export default function Chat({
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [activeSession?.messages])
 
-  useEffect(() => { saveSessions(sessions) }, [sessions])
-  useEffect(() => { try { localStorage.setItem(ACTIVE_KEY, activeId) } catch {} }, [activeId])
+  // 启动时从服务器加载会话
+  useEffect(() => {
+    fetch('/api/sessions')
+      .then(r => r.json())
+      .then((data: Session[]) => {
+        if (!Array.isArray(data) || data.length === 0) {
+          const s = createSession(); setSessions([s]); setActiveId(s.id); return
+        }
+        const parsed = parseSessions(data)
+        setSessions(parsed)
+        const savedId = (() => { try { return localStorage.getItem(ACTIVE_KEY) || '' } catch { return '' } })()
+        setActiveId(parsed.find(s => s.id === savedId) ? savedId : parsed[parsed.length - 1].id)
+      })
+      .catch(() => { const s = createSession(); setSessions([s]); setActiveId(s.id) })
+  }, [])
+
+  // 自动保存到服务器（debounce 800ms）
+  useEffect(() => {
+    if (sessions.length === 0) return
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => {
+      fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sessions),
+      }).catch(() => {})
+    }, 800)
+  }, [sessions])
+
+  // activeId 存本地（记住各设备上次选的对话）
+  useEffect(() => {
+    if (!activeId) return
+    try { localStorage.setItem(ACTIVE_KEY, activeId) } catch {}
+  }, [activeId])
 
   // 同步外部 prefs.aiName 变化（Settings 修改时）
   useEffect(() => {
@@ -310,7 +331,7 @@ export default function Chat({
         ? { ...s, messages: [...s.messages, userMsg], title: s.messages.length === 0 ? text.slice(0, 18) : s.title, updatedAt: new Date() }
         : s
     ))
-    await sendMessage([...activeSession.messages, userMsg])
+    await sendMessage([...(activeSession?.messages ?? []), userMsg])
   }
 
   const copyMsg = (content: string) => { navigator.clipboard.writeText(content).catch(() => {}) }
@@ -509,14 +530,14 @@ export default function Chat({
 
         {/* 消息列表 */}
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
-          {activeSession.messages.length === 0 && (
+          {activeSession?.messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-white/25 select-none gap-2">
               <div className="text-3xl">{prefs.aiText}</div>
               <div className="text-sm">在。今天想聊点什么？</div>
             </div>
           )}
 
-          {activeSession.messages.map(msg => (
+          {activeSession?.messages.map(msg => (
             <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               {msg.role === 'assistant' && msg.thinking && (
                 <div className="ml-9">
