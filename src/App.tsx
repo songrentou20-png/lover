@@ -83,9 +83,9 @@ export default function App() {
     document.documentElement.style.setProperty('--glass-border', border)
   }, [prefs.glassOpacity])
 
-  // body background 控制 status bar 区域（iOS fixed div 无法覆盖那里）
+  // html element 的背景覆盖整个视口含 status bar，body/fixed div 覆盖不到那里
   useEffect(() => {
-    const el = document.body
+    const el = document.documentElement
     if (prefs.wallpaper) {
       el.style.backgroundImage = `url(${prefs.wallpaper})`
       el.style.backgroundSize = 'cover'
