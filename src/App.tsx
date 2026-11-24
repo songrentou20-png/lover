@@ -28,55 +28,29 @@ export default function App() {
 
   useEffect(() => {
     const vv = window.visualViewport
+    fullHeightRef.current = vv ? vv.height : window.innerHeight
 
-    const sync = () => {
+    // 只用来检测键盘高度（决定是否隐藏导航栏），不再操作任何 CSS 变量
+    const onResize = () => {
       const h = vv ? vv.height : window.innerHeight
-      const offset = vv ? vv.offsetTop : 0
-      document.documentElement.style.setProperty('--vv-height', `${h}px`)
-      document.documentElement.style.setProperty('--vv-offset', `${offset}px`)
       const diff = fullHeightRef.current - h
       setKbHeight(diff > 150 ? diff : 0)
-      // 强制 GPU 重绘，修复 WebKit 合成层模糊
-      requestAnimationFrame(() => {
-        document.body.style.transform = 'translateZ(0)'
-        document.body.style.transform = ''
-      })
     }
 
-    fullHeightRef.current = vv ? vv.height : window.innerHeight
-    sync()
-
-    if (vv) {
-      vv.addEventListener('resize', sync)
-      vv.addEventListener('scroll', sync)
-    }
-
-    // 失焦时多次触发 sync，等键盘完全收起后 vv.height 才稳定
+    // 失焦时补一次检测，确保键盘完全收起后 kbHeight 归零
     const onBlur = (e: FocusEvent) => {
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA') {
-        setTimeout(() => {
-          window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
-          sync()
-        }, 150)
-        setTimeout(sync, 350)
-        setTimeout(sync, 600)
+        setTimeout(onResize, 400)
       }
     }
 
-    // PWA 切前台时刷新视口，修复顶部 UI 模糊
-    const onVisibility = () => { if (!document.hidden) sync() }
-
+    if (vv) vv.addEventListener('resize', onResize)
     document.addEventListener('blur', onBlur, true)
-    document.addEventListener('visibilitychange', onVisibility)
 
     return () => {
-      if (vv) {
-        vv.removeEventListener('resize', sync)
-        vv.removeEventListener('scroll', sync)
-      }
+      if (vv) vv.removeEventListener('resize', onResize)
       document.removeEventListener('blur', onBlur, true)
-      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 
