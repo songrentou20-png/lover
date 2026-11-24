@@ -105,13 +105,12 @@ export default function App() {
     <>
       {/* status bar 同色层：background-attachment:fixed 让坐标系和 html 背景对齐，颜色完全一致 */}
       <div className="fixed left-0 right-0 z-50 pointer-events-none" style={{ top: 0, height: 'env(safe-area-inset-top, 44px)', ...statusBarStyle }} />
-      {/* 内容区：从 top:0 开始覆盖 status bar，paddingTop 把内容推到 safe area 以下 */}
+      {/* 内容区从 safe area 以下开始，overlay div 负责覆盖 status bar 那块 */}
       <div
         className="fixed left-0 right-0 overflow-hidden"
         style={{
-          top: 0,
+          top: 'env(safe-area-inset-top, 0px)',
           bottom: kbHeight > 50 ? kbHeight : navH,
-          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
         {activeTab === 'chat' && <Chat prefs={prefs} kbHeight={kbHeight} />}
