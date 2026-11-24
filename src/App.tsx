@@ -97,24 +97,8 @@ export default function App() {
     }
   }, [prefs.wallpaper, bg.bg, bg.glow])
 
-  // status bar 同色覆盖层的背景色
-  const statusBarBg = prefs.wallpaper
-    ? 'rgba(0,0,0,0.7)'
-    : (bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg)
-
   return (
     <>
-      {/* status bar 同色覆盖层，遮住系统虚化效果 */}
-      <div
-        className="fixed left-0 right-0 z-50 pointer-events-none"
-        style={{
-          top: 0,
-          height: 'env(safe-area-inset-top, 44px)',
-          background: statusBarBg,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center top',
-        }}
-      />
       {/* 内容区：从 top:0 开始覆盖 status bar，paddingTop 把内容推到 safe area 以下 */}
       <div
         className="fixed left-0 right-0 overflow-hidden"
