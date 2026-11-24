@@ -87,9 +87,9 @@ export default function App() {
   useEffect(() => {
     const el = document.documentElement
     if (prefs.wallpaper) {
-      el.style.backgroundImage = `url(${prefs.wallpaper})`
-      el.style.backgroundSize = 'cover'
-      el.style.backgroundPosition = 'center'
+      el.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,0.55) 0px, rgba(0,0,0,0) 80px), url(${prefs.wallpaper})`
+      el.style.backgroundSize = 'cover, cover'
+      el.style.backgroundPosition = 'center, center'
       el.style.backgroundColor = ''
     } else {
       el.style.backgroundImage = ''
