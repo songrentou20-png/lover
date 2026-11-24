@@ -22,27 +22,22 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const navRef = useRef<HTMLDivElement>(null)
   const [kbHeight, setKbHeight] = useState(0)
+  const fullHeightRef = useRef(0)
   const { prefs, update } = usePreferences()
 
   useEffect(() => {
     const vv = window.visualViewport
-    const update = () => {
+    fullHeightRef.current = vv ? vv.height : window.innerHeight
+    const onResize = () => {
       const h = vv ? vv.height : window.innerHeight
-      const offset = vv ? vv.offsetTop : 0
-      const kb = Math.max(0, window.innerHeight - h - offset)
-      setKbHeight(kb)
-      document.documentElement.style.setProperty('--vv-height', `${h}px`)
+      const diff = fullHeightRef.current - h
+      setKbHeight(diff > 150 ? diff : 0)
     }
-    update()
     if (vv) {
-      vv.addEventListener('resize', update)
-      vv.addEventListener('scroll', update)
+      vv.addEventListener('resize', onResize)
     }
     return () => {
-      if (vv) {
-        vv.removeEventListener('resize', update)
-        vv.removeEventListener('scroll', update)
-      }
+      if (vv) vv.removeEventListener('resize', onResize)
     }
   }, [])
 

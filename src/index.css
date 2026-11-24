@@ -8,10 +8,6 @@
   padding: 0;
 }
 
-:root {
-  --vv-height: 100svh;
-}
-
 html, body, #root {
   height: 100%;
   width: 100%;
@@ -33,7 +29,9 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: var(--vv-height);
+  height: 100dvh;
+  /* 顶部安全区域：防止内容被 iOS 状态栏遮住 */
+  padding-top: env(safe-area-inset-top);
   overflow: hidden;
   overscroll-behavior: none;
 }
