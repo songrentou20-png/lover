@@ -518,7 +518,7 @@ export default function Chat({
         </div>
 
         {/* 消息列表 */}
-        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4" style={{ paddingBottom: `${Math.max(kbHeight, navHeight) + 80}px` }}>
+        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4" style={{ paddingBottom: kbHeight > 10 ? '80px' : `${navHeight + 80}px` }}>
           {activeSession?.messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-white/25 select-none gap-2">
               <div className="text-3xl">{prefs.aiText}</div>
