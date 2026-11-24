@@ -91,7 +91,7 @@ export default function App() {
         className="fixed left-0 right-0 overflow-hidden"
         style={{
           top: 'env(safe-area-inset-top, 0px)',
-          bottom: kbHeight > 50 ? 0 : navH,
+          bottom: kbHeight > 50 ? kbHeight : navH,
         }}
       >
         {activeTab === 'chat' && <Chat prefs={prefs} kbHeight={kbHeight} />}
