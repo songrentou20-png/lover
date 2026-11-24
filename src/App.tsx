@@ -106,7 +106,7 @@ export default function App() {
       <div className="-z-10 pointer-events-none" style={{
         ...bgStyle,
         position: 'fixed',
-        top: `-${sat}px`,
+        top: `-${Math.max(sat, 60)}px`,
         bottom: `-${sab}px`,
         left: 0,
         right: 0,
