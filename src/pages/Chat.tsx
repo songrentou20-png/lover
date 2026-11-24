@@ -18,7 +18,7 @@ interface Message {
 function ThinkingPanel({ content }: { content: string }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="glass rounded-2xl rounded-bl-sm mb-2 overflow-hidden max-w-[75%]">
+    <div className="glass rounded-2xl rounded-bl-sm mb-2 overflow-hidden w-fit min-w-[120px]">
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-white/5 transition-colors"
