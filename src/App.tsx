@@ -80,46 +80,43 @@ export default function App() {
       <div className="fixed inset-0 -z-10" style={bgStyle} />
       <div className="fixed inset-0 -z-10 pointer-events-none" style={{ background: bg.glow }} />
 
-      <div className="app-shell">
+      {/* 内容区：fixed 直接参照 visual viewport，彻底绕开 dvh 高度不确定性 */}
+      <div
+        className="fixed left-0 right-0 overflow-hidden"
+        style={{
+          top: 'env(safe-area-inset-top, 0px)',
+          bottom: kbHeight > 50 ? 0 : navH,
+        }}
+      >
+        {activeTab === 'chat' && <Chat prefs={prefs} kbHeight={kbHeight} />}
+        {activeTab === 'memory' && <Memory />}
+        {activeTab === 'mcp' && <MCP />}
+        {activeTab === 'apps' && <Apps />}
+        {activeTab === 'settings' && <SettingsPage prefs={prefs} updatePrefs={update} />}
+      </div>
 
-        {/* 内容区：从安全区域顶部到导航栏顶部（键盘弹出时延伸到底） */}
-        <div
-          className="absolute left-0 right-0 overflow-hidden"
-          style={{
-            top: 'env(safe-area-inset-top, 0px)',
-            bottom: kbHeight > 50 ? 0 : navH,
-          }}
-        >
-          {activeTab === 'chat' && <Chat prefs={prefs} kbHeight={kbHeight} />}
-          {activeTab === 'memory' && <Memory />}
-          {activeTab === 'mcp' && <MCP />}
-          {activeTab === 'apps' && <Apps />}
-          {activeTab === 'settings' && <SettingsPage prefs={prefs} updatePrefs={update} />}
-        </div>
-
-        {/* 底部导航：键盘弹起时隐藏；背景色覆盖 home indicator 区域 */}
-        <div ref={navRef} className={`absolute bottom-0 left-0 right-0 z-10 px-4 pt-2 nav-safe ${kbHeight > 50 ? 'hidden' : ''}`}
-          style={{ background: 'rgba(10, 8, 30, 0.75)' }}>
-          <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
-            {tabs.map(({ id, icon: Icon, label }) => {
-              const active = id === activeTab
-              return (
-                <button
-                  key={id}
-                  onClick={() => setActiveTab(id)}
-                  className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 ${
-                    active
-                      ? 'bg-white/15 text-white'
-                      : 'text-white/40 hover:text-white/70'
-                  }`}
-                >
-                  <Icon size={20} />
-                  <span className="text-[10px] font-medium">{label}</span>
-                </button>
-              )
-            })}
-          </nav>
-        </div>
+      {/* 底部导航：fixed bottom-0 直接贴 visual viewport 底部（含 home indicator） */}
+      <div ref={navRef} className={`fixed bottom-0 left-0 right-0 z-10 px-4 pt-2 nav-safe ${kbHeight > 50 ? 'hidden' : ''}`}
+        style={{ background: 'rgba(10, 8, 30, 0.75)' }}>
+        <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
+          {tabs.map(({ id, icon: Icon, label }) => {
+            const active = id === activeTab
+            return (
+              <button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 ${
+                  active
+                    ? 'bg-white/15 text-white'
+                    : 'text-white/40 hover:text-white/70'
+                }`}
+              >
+                <Icon size={20} />
+                <span className="text-[10px] font-medium">{label}</span>
+              </button>
+            )
+          })}
+        </nav>
       </div>
     </>
   )

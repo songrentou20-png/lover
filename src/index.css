@@ -29,8 +29,7 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  /* 100dvh 在 iOS PWA 不含 home indicator，+safe-area-inset-bottom 补全；overflow:hidden 裁掉多余部分 */
-  height: calc(100dvh + env(safe-area-inset-bottom, 0px));
+  height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
 }
