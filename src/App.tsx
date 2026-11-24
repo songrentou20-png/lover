@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+
 import { MessageCircle, Brain, Puzzle, LayoutGrid, Settings } from 'lucide-react'
 import Chat from './pages/Chat'
 import Memory from './pages/Memory'
@@ -24,38 +25,12 @@ export default function App() {
   const { prefs, update } = usePreferences()
 
   useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-    const update = () => {
-      const h = vv.height
-      const offset = vv.offsetTop
-      setKbHeight(Math.max(0, window.innerHeight - h - offset))
-      document.documentElement.style.setProperty('--vv-height', `${h}px`)
+    const baseH = window.innerHeight
+    const onResize = () => {
+      setKbHeight(Math.max(0, baseH - window.innerHeight))
     }
-    update()
-    vv.addEventListener('resize', update)
-    vv.addEventListener('scroll', update)
-
-    // 失焦时修复 iOS 白块
-    const onBlur = (e: FocusEvent) => {
-      const t = e.target as HTMLElement
-      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') {
-        setTimeout(() => {
-          window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
-          update()
-        }, 350)
-      }
-    }
-    document.addEventListener('blur', onBlur, true)
-    const onVis = () => { if (!document.hidden) update() }
-    document.addEventListener('visibilitychange', onVis)
-
-    return () => {
-      vv.removeEventListener('resize', update)
-      vv.removeEventListener('scroll', update)
-      document.removeEventListener('blur', onBlur, true)
-      document.removeEventListener('visibilitychange', onVis)
-    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
   }, [])
 
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default

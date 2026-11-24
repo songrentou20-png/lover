@@ -9,8 +9,7 @@
 }
 
 :root {
-  --vv-height: 100svh;
-  --vv-offset: 0px;
+  --vv-height: 100dvh;
 }
 
 html, body, #root {
@@ -34,7 +33,7 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: var(--vv-height);
+  height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
 }
