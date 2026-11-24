@@ -210,11 +210,9 @@ function SessionRow({
 // ——— 主组件 ———
 export default function Chat({
   prefs,
-  updatePrefs,
   navHeight = 88,
 }: {
   prefs: Preferences
-  updatePrefs: (patch: Partial<Preferences>) => void
   navHeight?: number
 }) {
   const [sessions, setSessions] = useState<Session[]>([])
