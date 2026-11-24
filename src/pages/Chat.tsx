@@ -225,8 +225,6 @@ export default function Chat({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [calling, setCalling] = useState(false)
-  const [editingAiName, setEditingAiName] = useState(false)
-  const [aiNameInput, setAiNameInput] = useState(prefs.aiName)
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
   const [inputBottom, setInputBottom] = useState(0)
@@ -289,11 +287,6 @@ export default function Chat({
     if (!activeId) return
     try { localStorage.setItem(ACTIVE_KEY, activeId) } catch {}
   }, [activeId])
-
-  // 同步外部 prefs.aiName 变化（Settings 修改时）
-  useEffect(() => {
-    if (!editingAiName) setAiNameInput(prefs.aiName)
-  }, [prefs.aiName, editingAiName])
 
   const autoResize = () => {
     const el = textareaRef.current
@@ -397,12 +390,6 @@ export default function Chat({
     })
   }
 
-  const submitAiName = () => {
-    if (aiNameInput.trim()) updatePrefs({ aiName: aiNameInput.trim() })
-    else setAiNameInput(prefs.aiName)
-    setEditingAiName(false)
-  }
-
   const formatTime = (d: Date) => d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 
   return (
@@ -499,28 +486,9 @@ export default function Chat({
             className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
           >
             <Avatar imageUrl={prefs.aiAvatar} text={prefs.aiText} size="w-7 h-7" textSize="text-xs" gradient="from-purple-500 to-blue-500" />
-            <div className="text-left" onClick={e => e.stopPropagation()}>
+            <div className="text-left">
               <div className="flex items-center gap-1">
-                {editingAiName ? (
-                  <input
-                    autoFocus
-                    value={aiNameInput}
-                    onChange={e => setAiNameInput(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === 'Escape') submitAiName()
-                    }}
-                    onBlur={submitAiName}
-                    className="bg-transparent text-sm font-semibold text-white outline-none border-b border-white/40 w-20"
-                  />
-                ) : (
-                  <span
-                    className="text-sm font-semibold text-white cursor-text hover:opacity-80"
-                    onClick={() => { setEditingAiName(true); setAiNameInput(prefs.aiName) }}
-                    title="点击改名"
-                  >
-                    {prefs.aiName}
-                  </span>
-                )}
+                <span className="text-sm font-semibold text-white">{prefs.aiName}</span>
                 <ChevronDown size={12} className="text-white/50" />
               </div>
               <div className="flex items-center gap-1 text-[10px] text-green-400">
