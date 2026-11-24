@@ -36,6 +36,11 @@ export default function App() {
       document.documentElement.style.setProperty('--vv-offset', `${offset}px`)
       const diff = fullHeightRef.current - h
       setKbHeight(diff > 150 ? diff : 0)
+      // 强制 GPU 重绘，修复 WebKit 合成层模糊
+      requestAnimationFrame(() => {
+        document.body.style.transform = 'translateZ(0)'
+        document.body.style.transform = ''
+      })
     }
 
     fullHeightRef.current = vv ? vv.height : window.innerHeight
@@ -46,14 +51,16 @@ export default function App() {
       vv.addEventListener('scroll', sync)
     }
 
-    // 失焦时重置 scroll，防止键盘收起后出现黑条
+    // 失焦时多次触发 sync，等键盘完全收起后 vv.height 才稳定
     const onBlur = (e: FocusEvent) => {
       const tag = (e.target as HTMLElement)?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA') {
         setTimeout(() => {
           window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
           sync()
-        }, 350)
+        }, 150)
+        setTimeout(sync, 350)
+        setTimeout(sync, 600)
       }
     }
 
@@ -116,8 +123,9 @@ export default function App() {
           {activeTab === 'settings' && <SettingsPage prefs={prefs} updatePrefs={update} />}
         </div>
 
-        {/* 底部导航：键盘弹起时隐藏 */}
-        <div ref={navRef} className={`absolute bottom-0 left-0 right-0 z-10 px-4 pt-2 nav-safe ${kbHeight > 50 ? 'hidden' : ''}`}>
+        {/* 底部导航：键盘弹起时隐藏；背景色覆盖 home indicator 区域 */}
+        <div ref={navRef} className={`absolute bottom-0 left-0 right-0 z-10 px-4 pt-2 nav-safe ${kbHeight > 50 ? 'hidden' : ''}`}
+          style={{ background: 'rgba(10, 8, 30, 0.75)' }}>
           <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
             {tabs.map(({ id, icon: Icon, label }) => {
               const active = id === activeTab
