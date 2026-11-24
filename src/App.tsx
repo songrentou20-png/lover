@@ -106,7 +106,7 @@ export default function App() {
         style={{
           bottom: `-${sab}px`,
           paddingBottom: `${sab + Math.max(sab, 16)}px`,
-          background: 'rgba(10, 8, 30, 0.75)',
+          background: 'rgba(0, 0, 0, 0.6)',
         }}>
         <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
           {tabs.map(({ id, icon: Icon, label }) => {
