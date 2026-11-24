@@ -99,12 +99,13 @@ export default function App() {
 
   return (
     <>
-      {/* 内容区：body transparent，html 的壁纸背景透出来覆盖整个屏幕含 status bar */}
+      {/* 内容区：从 top:0 开始覆盖 status bar，paddingTop 把内容推到 safe area 以下 */}
       <div
         className="fixed left-0 right-0 overflow-hidden"
         style={{
-          top: 'env(safe-area-inset-top, 0px)',
+          top: 0,
           bottom: kbHeight > 50 ? kbHeight : navH,
+          paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
       >
         {activeTab === 'chat' && <Chat prefs={prefs} kbHeight={kbHeight} />}
