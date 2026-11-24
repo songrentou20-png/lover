@@ -25,12 +25,25 @@ export default function App() {
   const { prefs, update } = usePreferences()
 
   useEffect(() => {
-    const baseH = window.innerHeight
-    const onResize = () => {
-      setKbHeight(Math.max(0, baseH - window.innerHeight))
+    const vv = window.visualViewport
+    const update = () => {
+      const h = vv ? vv.height : window.innerHeight
+      const offset = vv ? vv.offsetTop : 0
+      const kb = Math.max(0, window.innerHeight - h - offset)
+      setKbHeight(kb)
+      document.documentElement.style.setProperty('--vv-height', `${h}px`)
     }
-    window.addEventListener('resize', onResize)
-    return () => window.removeEventListener('resize', onResize)
+    update()
+    if (vv) {
+      vv.addEventListener('resize', update)
+      vv.addEventListener('scroll', update)
+    }
+    return () => {
+      if (vv) {
+        vv.removeEventListener('resize', update)
+        vv.removeEventListener('scroll', update)
+      }
+    }
   }, [])
 
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
