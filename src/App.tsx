@@ -82,6 +82,18 @@ export default function App() {
     : { background: bg.bg }
 
   useEffect(() => {
+    const html = document.documentElement
+    if (prefs.wallpaper) {
+      html.style.backgroundImage = `url(${prefs.wallpaper})`
+      html.style.backgroundSize = 'cover'
+      html.style.backgroundPosition = 'center'
+    } else {
+      html.style.backgroundImage = ''
+      html.style.background = bg.bg
+    }
+  }, [prefs.wallpaper, bg.bg])
+
+  useEffect(() => {
     const alpha = (0.02 + (prefs.glassOpacity / 100) * 0.18).toFixed(3)
     const border = (parseFloat(alpha) * 1.6).toFixed(3)
     document.documentElement.style.setProperty('--glass-alpha', alpha)
