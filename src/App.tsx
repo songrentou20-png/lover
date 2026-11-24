@@ -19,13 +19,8 @@ const tabs: { id: Tab; icon: typeof MessageCircle; label: string }[] = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
-  const [navHeight, setNavHeight] = useState(88)
   const navRef = useRef<HTMLDivElement>(null)
   const { prefs, update } = usePreferences()
-
-  useEffect(() => {
-    if (navRef.current) setNavHeight(navRef.current.offsetHeight)
-  }, [])
 
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
   const bgStyle = prefs.wallpaper
@@ -53,7 +48,7 @@ export default function App() {
 
       {/* 页面内容 */}
       <div className="relative flex-1 overflow-hidden">
-        {activeTab === 'chat' && <Chat prefs={prefs} navHeight={navHeight} />}
+        {activeTab === 'chat' && <Chat prefs={prefs} />}
         {activeTab === 'memory' && <Memory />}
         {activeTab === 'mcp' && <MCP />}
         {activeTab === 'apps' && <Apps />}
