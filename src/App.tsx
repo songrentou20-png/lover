@@ -75,18 +75,6 @@ export default function App() {
 
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
 
-  useEffect(() => {
-    const el = document.body
-    if (prefs.wallpaper) {
-      el.style.backgroundImage = `url(${prefs.wallpaper})`
-      el.style.backgroundSize = 'cover'
-      el.style.backgroundPosition = 'center'
-      el.style.backgroundColor = ''
-    } else {
-      el.style.backgroundImage = ''
-      el.style.background = bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg
-    }
-  }, [prefs.wallpaper, bg.bg, bg.glow])
 
   useEffect(() => {
     const alpha = (0.02 + (prefs.glassOpacity / 100) * 0.18).toFixed(3)
@@ -95,15 +83,22 @@ export default function App() {
     document.documentElement.style.setProperty('--glass-border', border)
   }, [prefs.glassOpacity])
 
+  const bgStyle = prefs.wallpaper
+    ? { backgroundImage: `url(${prefs.wallpaper})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' }
+    : { background: bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg }
+
   return (
     <>
+      {/* 壁纸层：z-index:0，inset:0 覆盖整个屏幕含 status bar 区域 */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0, ...bgStyle }} />
 
-      {/* 内容区：fixed 直接参照 visual viewport，彻底绕开 dvh 高度不确定性 */}
+      {/* 内容区：z-index:1，从 safe-area-inset-top 开始，壁纸透出 status bar */}
       <div
         className="fixed left-0 right-0 overflow-hidden"
         style={{
           top: 'env(safe-area-inset-top, 0px)',
           bottom: kbHeight > 50 ? kbHeight : navH,
+          zIndex: 1,
         }}
       >
         {activeTab === 'chat' && <Chat prefs={prefs} kbHeight={kbHeight} />}
