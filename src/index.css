@@ -26,6 +26,7 @@ body {
 
 :root {
   --vv-height: 100dvh;
+  --vv-offset: 0px;
 }
 
 .app-shell {
@@ -34,6 +35,7 @@ body {
   left: 0;
   width: 100%;
   height: var(--vv-height);
+  transform: translateY(var(--vv-offset));
   overflow: hidden;
   overscroll-behavior: none;
 }

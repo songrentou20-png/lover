@@ -28,20 +28,48 @@ export default function App() {
 
   useEffect(() => {
     const vv = window.visualViewport
-    fullHeightRef.current = vv ? vv.height : window.innerHeight
-    document.documentElement.style.setProperty('--vv-height', `${fullHeightRef.current}px`)
 
-    const onResize = () => {
+    const sync = () => {
       const h = vv ? vv.height : window.innerHeight
+      const offset = vv ? vv.offsetTop : 0
       document.documentElement.style.setProperty('--vv-height', `${h}px`)
+      document.documentElement.style.setProperty('--vv-offset', `${offset}px`)
       const diff = fullHeightRef.current - h
       setKbHeight(diff > 150 ? diff : 0)
     }
+
+    fullHeightRef.current = vv ? vv.height : window.innerHeight
+    sync()
+
     if (vv) {
-      vv.addEventListener('resize', onResize)
+      vv.addEventListener('resize', sync)
+      vv.addEventListener('scroll', sync)
     }
+
+    // 失焦时重置 scroll，防止键盘收起后出现黑条
+    const onBlur = (e: FocusEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA') {
+        setTimeout(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
+          sync()
+        }, 350)
+      }
+    }
+
+    // PWA 切前台时刷新视口，修复顶部 UI 模糊
+    const onVisibility = () => { if (!document.hidden) sync() }
+
+    document.addEventListener('blur', onBlur, true)
+    document.addEventListener('visibilitychange', onVisibility)
+
     return () => {
-      if (vv) vv.removeEventListener('resize', onResize)
+      if (vv) {
+        vv.removeEventListener('resize', sync)
+        vv.removeEventListener('scroll', sync)
+      }
+      document.removeEventListener('blur', onBlur, true)
+      document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [])
 
