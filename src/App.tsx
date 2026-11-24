@@ -24,7 +24,6 @@ export default function App() {
   const [kbHeight, setKbHeight] = useState(0)
   const [navH, setNavH] = useState(88)
   const [sab, setSab] = useState(34)
-  const [sat, setSat] = useState(0)
   const fullHeightRef = useRef(0)
   const { prefs, update } = usePreferences()
 
@@ -33,10 +32,8 @@ export default function App() {
     el.style.cssText = 'position:fixed;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);pointer-events:none;visibility:hidden'
     document.body.appendChild(el)
     const cs = getComputedStyle(el)
-    const satVal = parseInt(cs.paddingTop) || 0
     const sabVal = parseInt(cs.paddingBottom) || 0
     document.body.removeChild(el)
-    setSat(satVal)
     setSab(sabVal > 0 ? sabVal : 34)
   }, [])
 
@@ -77,9 +74,6 @@ export default function App() {
   }, [kbHeight])
 
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
-  const bgStyle = prefs.wallpaper
-    ? { backgroundImage: `url(${prefs.wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : { background: bg.bg }
 
   useEffect(() => {
     const el = document.body
