@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, Brain, Puzzle, LayoutGrid, Settings } from 'lucide-react'
 import Chat from './pages/Chat'
 import Memory from './pages/Memory'
@@ -19,7 +19,13 @@ const tabs: { id: Tab; icon: typeof MessageCircle; label: string }[] = [
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
+  const [navHeight, setNavHeight] = useState(88)
+  const navRef = useRef<HTMLDivElement>(null)
   const { prefs, update } = usePreferences()
+
+  useEffect(() => {
+    if (navRef.current) setNavHeight(navRef.current.offsetHeight)
+  }, [])
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
   const bgStyle = prefs.wallpaper
     ? { backgroundImage: `url(${prefs.wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -46,7 +52,7 @@ export default function App() {
 
       {/* 页面内容 */}
       <div className="relative flex-1 overflow-hidden">
-        {activeTab === 'chat' && <Chat prefs={prefs} updatePrefs={update} />}
+        {activeTab === 'chat' && <Chat prefs={prefs} updatePrefs={update} navHeight={navHeight} />}
         {activeTab === 'memory' && <Memory />}
         {activeTab === 'mcp' && <MCP />}
         {activeTab === 'apps' && <Apps />}
@@ -54,7 +60,7 @@ export default function App() {
       </div>
 
       {/* 底部导航 */}
-      <div className="relative z-10 px-4 pb-4 pt-2">
+      <div ref={navRef} className="relative z-10 px-4 pb-4 pt-2">
         <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
           {tabs.map(({ id, icon: Icon, label }) => {
             const active = id === activeTab

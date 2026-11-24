@@ -211,9 +211,11 @@ function SessionRow({
 export default function Chat({
   prefs,
   updatePrefs,
+  navHeight = 88,
 }: {
   prefs: Preferences
   updatePrefs: (patch: Partial<Preferences>) => void
+  navHeight?: number
 }) {
   const [sessions, setSessions] = useState<Session[]>([])
   const [activeId, setActiveId] = useState<string>('')
@@ -628,7 +630,7 @@ export default function Chat({
         </div>
 
         {/* 输入区域 */}
-        <div className="px-3 pb-2" style={{ position: 'fixed', left: 0, right: 0, bottom: inputBottom > 0 ? inputBottom : 76, zIndex: 10 }}>
+        <div className="px-3 pb-2" style={{ position: 'fixed', left: 0, right: 0, bottom: inputBottom > 0 ? inputBottom : navHeight, zIndex: 10 }}>
           <div className="glass rounded-2xl px-4 pt-3 pb-2">
             <textarea
               ref={textareaRef}
