@@ -93,7 +93,8 @@ export default function App() {
       el.style.backgroundColor = ''
     } else {
       el.style.backgroundImage = ''
-      el.style.background = bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg
+      const topMask = 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0px, rgba(0,0,0,0) 80px)'
+      el.style.background = bg.glow ? `${topMask}, ${bg.glow}, ${bg.bg}` : `${topMask}, ${bg.bg}`
     }
   }, [prefs.wallpaper, bg.bg, bg.glow])
 
