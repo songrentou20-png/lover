@@ -223,6 +223,7 @@ export default function Chat({
   const [calling, setCalling] = useState(false)
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
+  const [kbHeight, setKbHeight] = useState(0)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -238,7 +239,11 @@ export default function Chat({
   useEffect(() => {
     const vv = window.visualViewport
     if (!vv) return
-    const update = () => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const update = () => {
+      const kb = Math.max(0, window.innerHeight - vv.height)
+      setKbHeight(kb)
+      if (kb > 10) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
     vv.addEventListener('resize', update)
     return () => vv.removeEventListener('resize', update)
   }, [])
@@ -504,7 +509,7 @@ export default function Chat({
         </div>
 
         {/* 消息列表 */}
-        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4" style={{ paddingBottom: kbHeight > 10 ? `${kbHeight + 72}px` : '80px' }}>
           {activeSession?.messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-white/25 select-none gap-2">
               <div className="text-3xl">{prefs.aiText}</div>
@@ -589,7 +594,7 @@ export default function Chat({
         </div>
 
         {/* 输入区域 */}
-        <div className="px-3 pb-2">
+        <div className="px-3 pb-2" style={{ position: 'fixed', left: 0, right: 0, bottom: kbHeight, zIndex: 50 }}>
           <div className="glass rounded-2xl px-4 pt-3 pb-2">
             <textarea
               ref={textareaRef}
