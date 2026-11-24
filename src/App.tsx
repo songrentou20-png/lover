@@ -20,13 +20,8 @@ const tabs: { id: Tab; icon: typeof MessageCircle; label: string }[] = [
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const navRef = useRef<HTMLDivElement>(null)
-  const [navHeight, setNavHeight] = useState(88)
   const [kbHeight, setKbHeight] = useState(0)
   const { prefs, update } = usePreferences()
-
-  useEffect(() => {
-    if (navRef.current) setNavHeight(navRef.current.offsetHeight)
-  }, [])
 
   useEffect(() => {
     const vv = window.visualViewport
