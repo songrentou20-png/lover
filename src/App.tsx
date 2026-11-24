@@ -103,16 +103,12 @@ export default function App() {
 
   return (
     <>
-      {/* 壁纸层：z-index:0，inset:0 覆盖整个屏幕含 status bar 区域 */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 0, ...bgStyle }} />
-
-      {/* 内容区：z-index:1，从 safe-area-inset-top 开始，壁纸透出 status bar */}
+      {/* 内容区：body transparent，html 的壁纸背景透出来覆盖整个屏幕含 status bar */}
       <div
         className="fixed left-0 right-0 overflow-hidden"
         style={{
           top: 'env(safe-area-inset-top, 0px)',
           bottom: kbHeight > 50 ? kbHeight : navH,
-          zIndex: 1,
         }}
       >
         {activeTab === 'chat' && <Chat prefs={prefs} kbHeight={kbHeight} />}
