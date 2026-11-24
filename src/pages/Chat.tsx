@@ -537,7 +537,10 @@ export default function Chat({
             </div>
           )}
 
-          {activeSession?.messages.map(msg => (
+          {activeSession?.messages.map((msg, idx) => {
+            const nextMsg = activeSession.messages[idx + 1]
+            const isLastInGroup = !nextMsg || nextMsg.role !== msg.role
+            return (
             <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               {msg.role === 'assistant' && msg.thinking && (
                 <div className="ml-9">
@@ -571,26 +574,29 @@ export default function Chat({
                       <div className="whitespace-pre-wrap">{msg.content}</div>
                     </div>
                   )}
-                  <div className={`flex items-center gap-1 mt-1.5 px-1 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <span className="text-[10px] text-white/25 mr-1">{formatTime(msg.timestamp)}</span>
-                    <button onClick={() => copyMsg(msg.content)} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
-                      <Copy size={11} />
-                    </button>
-                    {msg.role === 'user' && (
-                      <button onClick={() => { setEditingMsgId(msg.id); setEditContent(msg.content) }} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
-                        <Pencil size={11} />
+                  {isLastInGroup && (
+                    <div className={`flex items-center gap-1 mt-1.5 px-1 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <span className="text-[10px] text-white/25 mr-1">{formatTime(msg.timestamp)}</span>
+                      <button onClick={() => copyMsg(msg.content)} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
+                        <Copy size={11} />
                       </button>
-                    )}
-                    {msg.role === 'assistant' && (
-                      <button onClick={() => retryMsg(msg.id)} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
-                        <RotateCcw size={11} />
-                      </button>
-                    )}
-                  </div>
+                      {msg.role === 'user' && (
+                        <button onClick={() => { setEditingMsgId(msg.id); setEditContent(msg.content) }} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
+                          <Pencil size={11} />
+                        </button>
+                      )}
+                      {msg.role === 'assistant' && (
+                        <button onClick={() => retryMsg(msg.id)} className="p-1 rounded-md hover:bg-white/10 text-white/25 hover:text-white/60 transition-colors">
+                          <RotateCcw size={11} />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-          ))}
+            )
+          })}
 
           {loading && (
             <div className="flex justify-start">
@@ -617,7 +623,7 @@ export default function Chat({
               placeholder="发送消息..."
               rows={1}
               className="w-full bg-transparent text-white text-sm resize-none outline-none leading-relaxed"
-              style={{ maxHeight: '160px' }}
+              style={{ maxHeight: '160px', fontSize: '16px' }}
             />
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-1">
