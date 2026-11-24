@@ -227,6 +227,7 @@ export default function Chat({
   const [aiNameInput, setAiNameInput] = useState(prefs.aiName)
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
+  const [inputBottom, setInputBottom] = useState(0)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -238,6 +239,19 @@ export default function Chat({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [activeSession?.messages])
+
+  // 键盘弹出时只移动输入框，不移动整个页面
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => {
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+      setInputBottom(kb)
+    }
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => { vv.removeEventListener('resize', update); vv.removeEventListener('scroll', update) }
+  }, [])
 
   // 启动时从服务器加载会话
   useEffect(() => {
@@ -529,7 +543,7 @@ export default function Chat({
         </div>
 
         {/* 消息列表 */}
-        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4" style={{ paddingBottom: '90px' }}>
           {activeSession?.messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-white/25 select-none gap-2">
               <div className="text-3xl">{prefs.aiText}</div>
@@ -614,7 +628,7 @@ export default function Chat({
         </div>
 
         {/* 输入区域 */}
-        <div className="px-3 pb-2">
+        <div className="px-3 pb-2" style={{ position: 'fixed', left: 0, right: 0, bottom: inputBottom, zIndex: 10 }}>
           <div className="glass rounded-2xl px-4 pt-3 pb-2">
             <textarea
               ref={textareaRef}
