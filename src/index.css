@@ -30,8 +30,6 @@ body {
   left: 0;
   width: 100%;
   height: 100dvh;
-  /* 顶部安全区域：防止内容被 iOS 状态栏遮住 */
-  padding-top: env(safe-area-inset-top);
   overflow: hidden;
   overscroll-behavior: none;
 }

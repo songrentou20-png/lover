@@ -22,6 +22,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const navRef = useRef<HTMLDivElement>(null)
   const [kbHeight, setKbHeight] = useState(0)
+  const [navH, setNavH] = useState(88)
   const fullHeightRef = useRef(0)
   const { prefs, update } = usePreferences()
 
@@ -41,6 +42,14 @@ export default function App() {
     }
   }, [])
 
+  // 键盘收回时测量导航栏实际高度
+  useEffect(() => {
+    if (navRef.current && kbHeight === 0) {
+      const h = navRef.current.getBoundingClientRect().height
+      if (h > 0) setNavH(h)
+    }
+  }, [kbHeight])
+
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
   const bgStyle = prefs.wallpaper
     ? { backgroundImage: `url(${prefs.wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -59,10 +68,16 @@ export default function App() {
       <div className="fixed inset-0 -z-10" style={bgStyle} />
       <div className="fixed inset-0 -z-10 pointer-events-none" style={{ background: bg.glow }} />
 
-      <div className="app-shell flex flex-col">
+      <div className="app-shell">
 
-        {/* 页面内容 */}
-        <div className="relative flex-1 overflow-hidden">
+        {/* 内容区：从安全区域顶部到导航栏顶部（键盘弹出时延伸到底） */}
+        <div
+          className="absolute left-0 right-0 overflow-hidden"
+          style={{
+            top: 'env(safe-area-inset-top, 0px)',
+            bottom: kbHeight > 50 ? 0 : navH,
+          }}
+        >
           {activeTab === 'chat' && <Chat prefs={prefs} kbHeight={kbHeight} />}
           {activeTab === 'memory' && <Memory />}
           {activeTab === 'mcp' && <MCP />}
@@ -70,8 +85,8 @@ export default function App() {
           {activeTab === 'settings' && <SettingsPage prefs={prefs} updatePrefs={update} />}
         </div>
 
-        {/* 底部导航：键盘弹起时隐藏，避免和输入框重叠 */}
-        <div ref={navRef} className={`relative z-10 px-4 pt-2 nav-safe ${kbHeight > 50 ? 'hidden' : ''}`}>
+        {/* 底部导航：键盘弹起时隐藏 */}
+        <div ref={navRef} className={`absolute bottom-0 left-0 right-0 z-10 px-4 pt-2 nav-safe ${kbHeight > 50 ? 'hidden' : ''}`}>
           <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
             {tabs.map(({ id, icon: Icon, label }) => {
               const active = id === activeTab
