@@ -240,12 +240,16 @@ export default function Chat({
     const vv = window.visualViewport
     if (!vv) return
     const update = () => {
-      const kb = Math.max(0, window.innerHeight - vv.height)
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
       setKbHeight(kb)
-      if (kb > 10) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      if (kb > 10) bottomRef.current?.scrollIntoView()
     }
     vv.addEventListener('resize', update)
-    return () => vv.removeEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
   }, [])
 
 
