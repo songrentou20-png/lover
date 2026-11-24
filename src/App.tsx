@@ -101,21 +101,9 @@ export default function App() {
                     active
                       ? 'bg-white/15 text-white'
                       : 'text-white/40 hover:text-white/70'
-                  } ${id === 'chat' ? 'relative' : ''}`}
+                  }`}
                 >
-                  {id === 'chat' ? (
-                    <div
-                      className={`p-2 rounded-xl transition-all duration-200 ${
-                        active
-                          ? 'bg-gradient-to-br from-purple-500 to-blue-500 shadow-lg shadow-purple-500/30'
-                          : 'bg-white/10'
-                      }`}
-                    >
-                      <Icon size={20} />
-                    </div>
-                  ) : (
-                    <Icon size={20} />
-                  )}
+                  <Icon size={20} />
                   <span className="text-[10px] font-medium">{label}</span>
                 </button>
               )
