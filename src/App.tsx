@@ -95,9 +95,13 @@ export default function App() {
         {activeTab === 'settings' && <SettingsPage prefs={prefs} updatePrefs={update} />}
       </div>
 
-      {/* 底部导航：fixed bottom-0 直接贴 visual viewport 底部（含 home indicator） */}
-      <div ref={navRef} className={`fixed bottom-0 left-0 right-0 z-10 px-4 pt-2 nav-safe ${kbHeight > 50 ? 'hidden' : ''}`}
-        style={{ background: 'rgba(10, 8, 30, 0.75)' }}>
+      {/* 底部导航：负 bottom 让背景延伸到 home indicator 以下；padding 补偿保持按钮位置 */}
+      <div ref={navRef} className={`fixed left-0 right-0 z-10 px-4 pt-2 ${kbHeight > 50 ? 'hidden' : ''}`}
+        style={{
+          bottom: 'calc(0px - env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + max(env(safe-area-inset-bottom, 0px), 16px))',
+          background: 'rgba(10, 8, 30, 0.75)',
+        }}>
         <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
           {tabs.map(({ id, icon: Icon, label }) => {
             const active = id === activeTab
