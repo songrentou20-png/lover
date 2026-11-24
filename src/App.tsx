@@ -27,13 +27,6 @@ export default function App() {
     if (navRef.current) setNavHeight(navRef.current.offsetHeight)
   }, [])
 
-  useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-    const fix = () => window.scrollTo(0, 0)
-    vv.addEventListener('scroll', fix)
-    return () => vv.removeEventListener('scroll', fix)
-  }, [])
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
   const bgStyle = prefs.wallpaper
     ? { backgroundImage: `url(${prefs.wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center' }
