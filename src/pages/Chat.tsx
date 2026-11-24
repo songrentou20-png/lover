@@ -210,11 +210,9 @@ function SessionRow({
 // ——— 主组件 ———
 export default function Chat({
   prefs,
-  navHeight = 88,
   kbHeight = 0,
 }: {
   prefs: Preferences
-  navHeight?: number
   kbHeight?: number
 }) {
   const [sessions, setSessions] = useState<Session[]>([])
