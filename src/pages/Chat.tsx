@@ -210,8 +210,10 @@ function SessionRow({
 // ——— 主组件 ———
 export default function Chat({
   prefs,
+  navHeight = 88,
 }: {
   prefs: Preferences
+  navHeight?: number
 }) {
   const [sessions, setSessions] = useState<Session[]>([])
   const [activeId, setActiveId] = useState<string>('')
@@ -223,6 +225,7 @@ export default function Chat({
   const [calling, setCalling] = useState(false)
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
+  const [hasKeyboard, setHasKeyboard] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -234,6 +237,14 @@ export default function Chat({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [activeSession?.messages])
+
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => setHasKeyboard(window.innerHeight - vv.height > 150)
+    vv.addEventListener('resize', update)
+    return () => vv.removeEventListener('resize', update)
+  }, [])
 
 
   // 启动时从服务器加载会话
@@ -496,7 +507,7 @@ export default function Chat({
         </div>
 
         {/* 消息列表 */}
-        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4" style={{ paddingBottom: `${navHeight + 72}px` }}>
           {activeSession?.messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-white/25 select-none gap-2">
               <div className="text-3xl">{prefs.aiText}</div>
@@ -581,7 +592,7 @@ export default function Chat({
         </div>
 
         {/* 输入区域 */}
-        <div className="px-3 pb-2">
+        <div className="px-3 pb-2" style={{ position: 'fixed', left: 0, right: 0, bottom: hasKeyboard ? 0 : navHeight, zIndex: 10 }}>
           <div className="glass rounded-2xl px-4 pt-3 pb-2">
             <textarea
               ref={textareaRef}
