@@ -29,8 +29,8 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  /* 纯 CSS，浏览器内部实时跟随视觉视口，无 JS 延迟，无 transform 亚像素问题 */
-  height: 100dvh;
+  /* 100dvh 在 iOS PWA 不含 home indicator，+safe-area-inset-bottom 补全；overflow:hidden 裁掉多余部分 */
+  height: calc(100dvh + env(safe-area-inset-bottom, 0px));
   overflow: hidden;
   overscroll-behavior: none;
 }
