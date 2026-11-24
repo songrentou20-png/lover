@@ -29,8 +29,11 @@ export default function App() {
   useEffect(() => {
     const vv = window.visualViewport
     fullHeightRef.current = vv ? vv.height : window.innerHeight
+    document.documentElement.style.setProperty('--vv-height', `${fullHeightRef.current}px`)
+
     const onResize = () => {
       const h = vv ? vv.height : window.innerHeight
+      document.documentElement.style.setProperty('--vv-height', `${h}px`)
       const diff = fullHeightRef.current - h
       setKbHeight(diff > 150 ? diff : 0)
     }
