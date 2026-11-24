@@ -21,10 +21,47 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
   const navRef = useRef<HTMLDivElement>(null)
   const [navHeight, setNavHeight] = useState(88)
+  const [kbHeight, setKbHeight] = useState(0)
   const { prefs, update } = usePreferences()
 
   useEffect(() => {
     if (navRef.current) setNavHeight(navRef.current.offsetHeight)
+  }, [])
+
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => {
+      const h = vv.height
+      const offset = vv.offsetTop
+      setKbHeight(Math.max(0, window.innerHeight - h - offset))
+      document.documentElement.style.setProperty('--vv-height', `${h}px`)
+      document.documentElement.style.setProperty('--vv-offset', `${offset}px`)
+    }
+    update()
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+
+    // 失焦时修复 iOS 白块
+    const onBlur = (e: FocusEvent) => {
+      const t = e.target as HTMLElement
+      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') {
+        setTimeout(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior })
+          update()
+        }, 350)
+      }
+    }
+    document.addEventListener('blur', onBlur, true)
+    const onVis = () => { if (!document.hidden) update() }
+    document.addEventListener('visibilitychange', onVis)
+
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+      document.removeEventListener('blur', onBlur, true)
+      document.removeEventListener('visibilitychange', onVis)
+    }
   }, [])
 
   const bg = BG_PRESETS[prefs.bgPreset] ?? BG_PRESETS.default
@@ -45,11 +82,11 @@ export default function App() {
       <div className="fixed inset-0 -z-10" style={bgStyle} />
       <div className="fixed inset-0 -z-10 pointer-events-none" style={{ background: bg.glow }} />
 
-      <div className="relative h-full w-full flex flex-col overflow-hidden">
+      <div className="app-shell flex flex-col">
 
         {/* 页面内容 */}
         <div className="relative flex-1 overflow-hidden">
-          {activeTab === 'chat' && <Chat prefs={prefs} navHeight={navHeight} />}
+          {activeTab === 'chat' && <Chat prefs={prefs} navHeight={navHeight} kbHeight={kbHeight} />}
           {activeTab === 'memory' && <Memory />}
           {activeTab === 'mcp' && <MCP />}
           {activeTab === 'apps' && <Apps />}

@@ -211,9 +211,11 @@ function SessionRow({
 export default function Chat({
   prefs,
   navHeight = 88,
+  kbHeight = 0,
 }: {
   prefs: Preferences
   navHeight?: number
+  kbHeight?: number
 }) {
   const [sessions, setSessions] = useState<Session[]>([])
   const [activeId, setActiveId] = useState<string>('')
@@ -225,9 +227,6 @@ export default function Chat({
   const [calling, setCalling] = useState(false)
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
-  const [kbHeight, setKbHeight] = useState(0)
-  const [vvHeight, setVvHeight] = useState(() => window.innerHeight)
-
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -238,25 +237,6 @@ export default function Chat({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [activeSession?.messages])
-
-  useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv) return
-    const update = () => {
-      setVvHeight(vv.height)
-      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
-      setKbHeight(kb)
-      if (kb > 10) bottomRef.current?.scrollIntoView()
-    }
-    update()
-    vv.addEventListener('resize', update)
-    vv.addEventListener('scroll', update)
-    return () => {
-      vv.removeEventListener('resize', update)
-      vv.removeEventListener('scroll', update)
-    }
-  }, [])
-
 
   // 启动时从服务器加载会话
   useEffect(() => {
@@ -481,8 +461,8 @@ export default function Chat({
         </div>
       </aside>
 
-      {/* 主聊天区域：高度跟视觉视口走，键盘弹起时自动缩短 */}
-      <div className="flex flex-col flex-1 overflow-hidden" style={{ height: `${vvHeight}px` }}>
+      {/* 主聊天区域 */}
+      <div className="flex flex-col flex-1 overflow-hidden h-full">
 
         {/* 顶栏 */}
         <div className="flex items-center justify-between px-4 py-3">
@@ -603,12 +583,16 @@ export default function Chat({
         </div>
 
         {/* 输入区域 */}
-        <div className="px-3 pb-2" style={{ position: 'fixed', left: 0, right: 0, bottom: Math.max(kbHeight, navHeight), zIndex: 50 }}>
+        <div className="px-3 pb-2" style={{ position: 'fixed', left: 0, right: 0, bottom: kbHeight > 50 ? 0 : navHeight, zIndex: 50 }}>
           <div className="glass rounded-2xl px-4 pt-3 pb-2">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={e => { setInput(e.target.value); autoResize() }}
+              onPointerDown={e => {
+                e.preventDefault()
+                textareaRef.current?.focus({ preventScroll: true })
+              }}
               placeholder="发送消息..."
               rows={1}
               className="w-full bg-transparent text-white text-sm resize-none outline-none leading-relaxed"
