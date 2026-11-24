@@ -29,11 +29,15 @@ export default function App() {
   const { prefs, update } = usePreferences()
 
   useEffect(() => {
-    const style = getComputedStyle(document.documentElement)
-    const sabVal = parseInt(style.getPropertyValue('--sab')) || 0
-    setSab(sabVal > 0 ? sabVal : 34)
-    const satVal = parseInt(style.getPropertyValue('--sat')) || 0
+    const el = document.createElement('div')
+    el.style.cssText = 'position:fixed;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);pointer-events:none;visibility:hidden'
+    document.body.appendChild(el)
+    const cs = getComputedStyle(el)
+    const satVal = parseInt(cs.paddingTop) || 0
+    const sabVal = parseInt(cs.paddingBottom) || 0
+    document.body.removeChild(el)
     setSat(satVal)
+    setSab(sabVal > 0 ? sabVal : 34)
   }, [])
 
   useEffect(() => {
