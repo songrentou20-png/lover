@@ -469,7 +469,7 @@ export default function Chat({
       <div className="flex flex-col flex-1 overflow-hidden h-full">
 
         {/* 顶栏 */}
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3">
           <button
             onClick={() => setSidebarOpen(true)}
             className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
@@ -502,7 +502,7 @@ export default function Chat({
         </div>
 
         {/* 消息列表 */}
-        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-2 space-y-4">
           {activeSession?.messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-white/25 select-none gap-2">
               <div className="text-3xl">{prefs.aiText}</div>
