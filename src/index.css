@@ -34,7 +34,8 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: var(--vv-height);
+  /* 延伸到底部 safe area，让导航栏背景覆盖 home indicator 区域 */
+  height: calc(var(--vv-height) + env(safe-area-inset-bottom, 0px));
   transform: translateY(var(--vv-offset));
   overflow: hidden;
   overscroll-behavior: none;
