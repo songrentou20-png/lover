@@ -32,6 +32,17 @@ export default function App() {
     document.documentElement.style.setProperty('--glass-border', border)
   }, [prefs.glassOpacity])
 
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => {
+      document.documentElement.style.height = vv.height + 'px'
+    }
+    vv.addEventListener('resize', update)
+    update()
+    return () => vv.removeEventListener('resize', update)
+  }, [])
+
   return (
     <div
       className="relative h-full w-full flex flex-col overflow-hidden"
