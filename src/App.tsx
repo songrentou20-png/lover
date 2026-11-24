@@ -83,6 +83,20 @@ export default function App() {
     document.documentElement.style.setProperty('--glass-border', border)
   }, [prefs.glassOpacity])
 
+  // body background 控制 status bar 区域（iOS fixed div 无法覆盖那里）
+  useEffect(() => {
+    const el = document.body
+    if (prefs.wallpaper) {
+      el.style.backgroundImage = `url(${prefs.wallpaper})`
+      el.style.backgroundSize = 'cover'
+      el.style.backgroundPosition = 'center'
+      el.style.backgroundColor = ''
+    } else {
+      el.style.backgroundImage = ''
+      el.style.background = bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg
+    }
+  }, [prefs.wallpaper, bg.bg, bg.glow])
+
   const bgStyle = prefs.wallpaper
     ? { backgroundImage: `url(${prefs.wallpaper})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' }
     : { background: bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg }
