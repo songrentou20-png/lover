@@ -240,7 +240,7 @@ export default function Chat({
 
   useEffect(() => {
     if (kbHeight > 50) {
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 150)
+      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 350)
     }
   }, [kbHeight])
 
@@ -595,10 +595,6 @@ export default function Chat({
               ref={textareaRef}
               value={input}
               onChange={e => { setInput(e.target.value); autoResize() }}
-              onPointerDown={e => {
-                e.preventDefault()
-                textareaRef.current?.focus({ preventScroll: true })
-              }}
               placeholder="发送消息..."
               rows={1}
               className="w-full bg-transparent text-white text-sm resize-none outline-none leading-relaxed"

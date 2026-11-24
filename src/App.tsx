@@ -36,7 +36,6 @@ export default function App() {
       const offset = vv.offsetTop
       setKbHeight(Math.max(0, window.innerHeight - h - offset))
       document.documentElement.style.setProperty('--vv-height', `${h}px`)
-      document.documentElement.style.setProperty('--vv-offset', `${offset}px`)
     }
     update()
     vv.addEventListener('resize', update)
