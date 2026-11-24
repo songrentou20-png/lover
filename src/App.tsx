@@ -97,10 +97,6 @@ export default function App() {
     }
   }, [prefs.wallpaper, bg.bg, bg.glow])
 
-  const bgStyle = prefs.wallpaper
-    ? { backgroundImage: `url(${prefs.wallpaper})`, backgroundSize: 'cover' as const, backgroundPosition: 'center' }
-    : { background: bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg }
-
   return (
     <>
       {/* 内容区：body transparent，html 的壁纸背景透出来覆盖整个屏幕含 status bar */}
