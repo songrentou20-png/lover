@@ -82,14 +82,15 @@ export default function App() {
     : { background: bg.bg }
 
   useEffect(() => {
-    const html = document.documentElement
+    const el = document.body
     if (prefs.wallpaper) {
-      html.style.backgroundImage = `url(${prefs.wallpaper})`
-      html.style.backgroundSize = 'cover'
-      html.style.backgroundPosition = 'center'
-      html.style.backgroundColor = ''
+      el.style.backgroundImage = `url(${prefs.wallpaper})`
+      el.style.backgroundSize = 'cover'
+      el.style.backgroundPosition = 'center'
+      el.style.backgroundColor = ''
     } else {
-      html.style.background = bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg
+      el.style.backgroundImage = ''
+      el.style.background = bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg
     }
   }, [prefs.wallpaper, bg.bg, bg.glow])
 
