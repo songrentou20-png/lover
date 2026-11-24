@@ -87,11 +87,11 @@ export default function App() {
       html.style.backgroundImage = `url(${prefs.wallpaper})`
       html.style.backgroundSize = 'cover'
       html.style.backgroundPosition = 'center'
+      html.style.backgroundColor = ''
     } else {
-      html.style.backgroundImage = ''
-      html.style.background = bg.bg
+      html.style.background = bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg
     }
-  }, [prefs.wallpaper, bg.bg])
+  }, [prefs.wallpaper, bg.bg, bg.glow])
 
   useEffect(() => {
     const alpha = (0.02 + (prefs.glassOpacity / 100) * 0.18).toFixed(3)
@@ -102,16 +102,6 @@ export default function App() {
 
   return (
     <>
-      {/* 背景层：position fixed，永远钉死不动，可以被键盘遮住 */}
-      <div className="-z-10 pointer-events-none" style={{
-        ...bgStyle,
-        position: 'fixed',
-        top: `-${Math.max(sat, 60)}px`,
-        bottom: `-${sab}px`,
-        left: 0,
-        right: 0,
-      }} />
-      {!prefs.wallpaper && <div className="fixed inset-0 -z-10 pointer-events-none" style={{ background: bg.glow }} />}
 
       {/* 内容区：fixed 直接参照 visual viewport，彻底绕开 dvh 高度不确定性 */}
       <div

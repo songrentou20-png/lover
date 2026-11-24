@@ -10,7 +10,7 @@
 
 
 html {
-  background: #0a0a1e;
+  background: #0a0a1e; /* JS 加载前的兜底，不会露白 */
 }
 
 html, body, #root {
