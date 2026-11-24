@@ -47,6 +47,7 @@ body {
 :root {
   --glass-alpha: 0.07;
   --glass-border: 0.12;
+  --sab: env(safe-area-inset-bottom, 0px);
 }
 
 .glass {

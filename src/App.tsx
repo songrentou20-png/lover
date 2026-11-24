@@ -23,8 +23,14 @@ export default function App() {
   const navRef = useRef<HTMLDivElement>(null)
   const [kbHeight, setKbHeight] = useState(0)
   const [navH, setNavH] = useState(88)
+  const [sab, setSab] = useState(34)
   const fullHeightRef = useRef(0)
   const { prefs, update } = usePreferences()
+
+  useEffect(() => {
+    const val = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sab')) || 0
+    setSab(val > 0 ? val : 34)
+  }, [])
 
   useEffect(() => {
     const vv = window.visualViewport
@@ -98,8 +104,8 @@ export default function App() {
       {/* 底部导航：负 bottom 让背景延伸到 home indicator 以下；padding 补偿保持按钮位置 */}
       <div ref={navRef} className={`fixed left-0 right-0 z-10 px-4 pt-2 ${kbHeight > 50 ? 'hidden' : ''}`}
         style={{
-          bottom: '-34px',
-          paddingBottom: 'calc(34px + max(env(safe-area-inset-bottom, 0px), 16px))',
+          bottom: `-${sab}px`,
+          paddingBottom: `${sab + Math.max(sab, 16)}px`,
           background: 'rgba(10, 8, 30, 0.75)',
         }}>
         <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
