@@ -593,6 +593,13 @@ export default function Chat({
               ref={textareaRef}
               value={input}
               onChange={e => { setInput(e.target.value); autoResize() }}
+              onPointerDown={(e) => {
+                // 只在获取焦点时阻止 iOS 原生 scroll-to-element，已聚焦后不拦截（保留文本选择）
+                if (document.activeElement !== textareaRef.current) {
+                  e.preventDefault()
+                  textareaRef.current?.focus({ preventScroll: true })
+                }
+              }}
               placeholder="发送消息..."
               rows={1}
               className="w-full bg-transparent text-white text-sm resize-none outline-none leading-relaxed"
