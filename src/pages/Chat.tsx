@@ -469,8 +469,8 @@ export default function Chat({
       <div className="flex flex-col flex-1 overflow-hidden h-full">
 
         {/* 顶栏 */}
-        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/[0.06]"
-          style={{ background: 'rgba(0,0,0,0.3)' }}>
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-white/[0.08]"
+          style={{ background: 'transparent' }}>
           <button
             onClick={() => setSidebarOpen(true)}
             className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
