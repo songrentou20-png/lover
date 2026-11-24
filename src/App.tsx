@@ -133,9 +133,7 @@ export default function App() {
         style={{
           bottom: `-${sab}px`,
           paddingBottom: `${sab + Math.max(sab, 16)}px`,
-          background: 'rgba(0, 0, 0, 0.2)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
+          background: 'transparent',
         }}>
         <nav className="glass rounded-2xl px-2 py-2 flex items-center justify-around max-w-md mx-auto">
           {tabs.map(({ id, icon: Icon, label }) => {
@@ -147,7 +145,7 @@ export default function App() {
                 className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 ${
                   active
                     ? 'bg-white/15 text-white'
-                    : 'text-white/40 hover:text-white/70'
+                    : 'text-white/70 hover:text-white'
                 }`}
               >
                 <Icon size={20} />
