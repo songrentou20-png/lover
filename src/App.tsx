@@ -97,8 +97,14 @@ export default function App() {
     }
   }, [prefs.wallpaper, bg.bg, bg.glow])
 
+  const statusBarStyle: React.CSSProperties = prefs.wallpaper
+    ? { backgroundImage: `url(${prefs.wallpaper})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
+    : { background: bg.glow ? `${bg.glow}, ${bg.bg}` : bg.bg, backgroundAttachment: 'fixed' }
+
   return (
     <>
+      {/* status bar 同色层：background-attachment:fixed 让坐标系和 html 背景对齐，颜色完全一致 */}
+      <div className="fixed left-0 right-0 z-50 pointer-events-none" style={{ top: 0, height: 'env(safe-area-inset-top, 44px)', ...statusBarStyle }} />
       {/* 内容区：从 top:0 开始覆盖 status bar，paddingTop 把内容推到 safe area 以下 */}
       <div
         className="fixed left-0 right-0 overflow-hidden"
