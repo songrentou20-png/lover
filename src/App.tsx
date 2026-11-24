@@ -84,7 +84,7 @@ export default function App() {
     <>
       {/* 背景层：position fixed，永远钉死不动，可以被键盘遮住 */}
       <div className="fixed inset-0 -z-10" style={bgStyle} />
-      <div className="fixed inset-0 -z-10 pointer-events-none" style={{ background: bg.glow }} />
+      {!prefs.wallpaper && <div className="fixed inset-0 -z-10 pointer-events-none" style={{ background: bg.glow }} />}
 
       {/* 内容区：fixed 直接参照 visual viewport，彻底绕开 dvh 高度不确定性 */}
       <div
