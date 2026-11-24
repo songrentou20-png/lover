@@ -41,15 +41,14 @@ export default function App() {
 
 
   return (
+    <>
+      {/* 背景层：position fixed，永远钉死不动 */}
+      <div className="fixed inset-0 -z-10" style={bgStyle} />
+      <div className="fixed inset-0 -z-10 pointer-events-none" style={{ background: bg.glow }} />
+
     <div
       className="relative h-full w-full flex flex-col overflow-hidden"
-      style={bgStyle}
     >
-      {/* 背景光晕 */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: bg.glow }}
-      />
 
       {/* 页面内容 */}
       <div className="relative flex-1 overflow-hidden">
@@ -95,5 +94,6 @@ export default function App() {
         </nav>
       </div>
     </div>
+    </>
   )
 }
