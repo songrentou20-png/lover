@@ -57,8 +57,8 @@ body {
 }
 
 .glass {
-  background: rgba(255, 255, 255, var(--glass-alpha, 0.06));
-  border: 1px solid rgba(255, 255, 255, var(--glass-border, 0.10));
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-dark {
